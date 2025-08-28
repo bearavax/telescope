@@ -7,6 +7,7 @@ import { Newspaper, Menu, Home } from "lucide-react";
 import { FAQ } from "@/components/faq";
 import { ConnectButton } from "@/components/connect-button";
 import { BackButton } from "@/components/back-button";
+import { DonateModal } from "@/components/donate-modal";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export function Navbar() {
@@ -33,6 +34,7 @@ export function Navbar() {
               News
             </Link>
           </div>
+          <DonateModal />
           <FAQ />
           <ConnectButton />
           <Sheet open={isOpen} onOpenChange={setIsOpen}>

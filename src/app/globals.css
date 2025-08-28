@@ -139,3 +139,28 @@ body {
 .no-arrows {
   -moz-appearance: textfield;
 }
+
+.snow-button-secondary {
+  position: relative;
+  border: 2px solid #416c99;
+  border-radius: 0.5rem;
+  padding: 8px 16px;
+  min-width: 8em;
+  text-align: center;
+  color: #416c99;
+  background: white;
+  text-decoration: none;
+  display: inline-block;
+  transition-property: transform, filter, background-color;
+  transition-duration: 0.2s;
+  will-change: transform;
+  font-size: 14px;
+  font-weight: 600;
+}
+.snow-button-secondary:hover {
+  background-color: #f0f7ff;
+  text-decoration: none;
+}
+.snow-button-secondary:active {
+  transform: translateY(2px);
+}
