@@ -18,7 +18,7 @@ const DONATION_ADDRESS = "0x29ef2557405ddcf645dabf04a9b79afd14c698ae";
 
 export function DonateModal() {
   const [amount, setAmount] = useState("");
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const { toast } = useToast();
   
   const { data: hash, sendTransaction, isPending, reset } = useSendTransaction();
