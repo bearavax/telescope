@@ -1,14 +1,12 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { LeaderboardTable } from "@/components/leaderboard-table";
-import { VoteButton } from "@/components/vote-button";
-import { LeaderboardItem, IncubatorProject } from "@/types";
+import { LeaderboardItem } from "@/types";
 import { Users } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useAccount } from "wagmi";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Countdown } from "@/components/countdown";
 import { getTextColorClass } from "@/lib/utils";
 import { Categories } from "@/components/categories";
@@ -16,85 +14,23 @@ import { useUserStats } from "@/hooks/use-user-stats";
 import { ConnectDiscordAlert } from "@/components/connect-discord-alert";
 import { Address } from "viem";
 import { useSession } from "next-auth/react";
-import { ProjectCard } from "@/components/project-card";
-import { DisclaimerAlert } from "@/components/disclaimer-alert";
 import { BearUniversityAlert } from "@/components/bear-university-alert";
 //import { MintWindow } from "@/components/mint-window";
 
-interface VotingStatusProps {
-  isLocked: boolean;
-  nextVoteTime: Date | null;
-}
-
-const VotingStatusMessage = React.memo(
-  ({ isLocked, nextVoteTime }: VotingStatusProps) => {
-    const { address } = useAccount();
-    const { data: voteLockStatus } = useQuery({
-      queryKey: ["voteLockStatus", address],
-      queryFn: async () => {
-        if (!address) return false;
-        const response = await fetch(`/api/admin/vote-lock?walletAddress=${address}`);
-        if (!response.ok) return false;
-        const data = await response.json();
-        return data.voteLock;
-      },
-      enabled: !!address,
-      refetchInterval: 5000, // Refetch every 5 seconds
-    });
-
-    if (voteLockStatus) {
-      return (
-        <div className="text-sm text-zinc-900 font-medium bg-white px-4 py-2 rounded-lg border-white border-2 flex items-center gap-2 shadow">
-          <span>Voting is locked until next season</span>
-          <img src="/telescope.svg" className="w-4 h-4" />
-        </div>
-      );
-    }
-
-    if (!isLocked) {
-      return (
-        <div className="text-sm text-zinc-900 font-medium bg-white px-4 py-2 rounded-lg border-white border-2 flex items-center gap-2 shadow">
-          You can vote now! 🎉
-        </div>
-      );
-    }
-
-    if (nextVoteTime) {
-      const timeRemaining = nextVoteTime.getTime() - Date.now();
-      const hoursRemaining = Math.floor(timeRemaining / (1000 * 60 * 60));
-      const minutesRemaining = Math.floor(
-        (timeRemaining % (1000 * 60 * 60)) / (1000 * 60)
-      );
-
-      return (
-        <div className="text-sm text-zinc-900 font-medium bg-white px-4 py-2 rounded-lg border-white border-2 flex items-center gap-2 shadow">
-          You can vote again in {hoursRemaining}h {minutesRemaining}m ⏰
-        </div>
-      );
-    }
-
-    return null;
-  }
-);
-
-VotingStatusMessage.displayName = "VotingStatusMessage";
 
 export default function Home() {
   const searchParams = useSearchParams();
   const selectedTag = searchParams.get("tag") || undefined;
 
-  const queryClient = useQueryClient();
   const { address, isConnected } = useAccount();
   const { data: userStats, isLoading: isUserStatsLoading } = useUserStats(
     address as Address,
     isConnected
   );
   const { status: sessionStatus } = useSession();
-  const [isVotingLocked, setIsVotingLocked] = useState(false);
-  const [nextVoteTime, setNextVoteTime] = useState<Date | null>(null);
 
   const [activeTab, setActiveTab] = useState<
-    "projects" | "season1" | "artists" | "incubator" | "mint"
+    "projects" | "season1" | "artists" | "mint"
   >("projects");
 
   const {
@@ -159,54 +95,7 @@ export default function Home() {
     refetchInterval: 5000,
   });
 
-  const { data: incubatorProjects } = useQuery<IncubatorProject[], Error>({
-    queryKey: ["incubator-projects", selectedTag],
-    queryFn: async () => {
-      const url = `/api/incubator${selectedTag ? `?tag=${selectedTag}` : ""}`;
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error("Failed to fetch incubator projects.");
-      }
-      return response.json();
-    },
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    refetchInterval: 5000,
-  });
 
-  // Check global voting status when component mounts or address changes
-  useEffect(() => {
-    const checkGlobalVotingStatus = async () => {
-      if (isConnected && address) {
-        try {
-          const response = await fetch(
-            `/api/users/voting-status?walletAddress=${address}`
-          );
-          if (response.ok) {
-            const data = await response.json();
-            setIsVotingLocked(data.isLocked);
-            if (data.isLocked && data.nextVoteTime) {
-              setNextVoteTime(new Date(data.nextVoteTime));
-            } else {
-              setNextVoteTime(null);
-            }
-          }
-        } catch (error) {
-          console.error("Failed to fetch voting status:", error);
-        }
-      }
-    };
-
-    checkGlobalVotingStatus();
-  }, [isConnected, address]);
-
-  const handleVoteSuccess = useCallback(() => {
-    setIsVotingLocked(true);
-    queryClient.invalidateQueries({ queryKey: ["projects"] });
-  }, [queryClient]);
 
   return (
     <div className="w-full">
@@ -232,55 +121,22 @@ export default function Home() {
                   Projects
                 </TabsTrigger>
                 <TabsTrigger
-                  value="incubator"
-                  className="px-4 py-2 font-bold text-md bg-white border-white border-2"
-                >
-                  Incubator
-                </TabsTrigger>
-                <TabsTrigger
                   value="artists"
-                  className="px-4 py-2 font-bold text-md bg-white relative border-white border-2"
+                  className="px-4 py-2 font-bold text-md bg-white border-white border-2"
                   onClick={() => {
                     setActiveTab("artists");
                   }}
                 >
-                  <Badge className="absolute -top-3 -right-6 text-xs bg-sky-900 text-white hover:bg-sky-900 border-white">
-                    Soon
-                  </Badge>
                   Artists
                 </TabsTrigger>
               </TabsList>
             </div>
-            {activeTab !== "mint" &&
-              (isConnected ? (
-                <VotingStatusMessage
-                  isLocked={isVotingLocked}
-                  nextVoteTime={nextVoteTime}
-                />
-              ) : (
-                <div className="text-sm text-zinc-900 font-medium bg-white px-4 py-2 rounded-lg border-white border-2 flex items-center gap-2 shadow">
-                  {isVotingLocked ? (
-                    <>
-                      <span>Voting is locked until next season</span>
-                      <img src="/telescope.svg" className="w-4 h-4" />
-                    </>
-                  ) : (
-                    <>
-                      <span>Connect your wallet to vote</span>
-                      <img src="/telescope.svg" className="w-4 h-4" />
-                    </>
-                  )}
-                </div>
-              ))}
           </div>
-          {activeTab !== "mint" &&
+          {activeTab === "projects" &&
             (isConnected && !isUserStatsLoading && !userStats?.discordId ? (
               <ConnectDiscordAlert />
             ) : sessionStatus !== "loading" ? (
-              <>
-                {activeTab === "projects" && <Countdown />}
-                {activeTab === "incubator" && <DisclaimerAlert />}
-              </>
+              <Countdown />
             ) : null)}
           {activeTab === "mint" && <BearUniversityAlert />}
           <TabsContent
@@ -293,7 +149,7 @@ export default function Home() {
                   value="current"
                   className="px-4 py-2 font-bold text-sm bg-white border-white border-2"
                 >
-                  Current Season
+                  Season 2
                 </TabsTrigger>
                 <TabsTrigger
                   value="season1"
@@ -336,13 +192,6 @@ export default function Home() {
                       </div>
                     );
                   }}
-                  renderActions={(item) => (
-                    <VoteButton
-                      projectId={item.id.toString()}
-                      onVoteSuccess={handleVoteSuccess}
-                      isGloballyDisabled={isVotingLocked}
-                    />
-                  )}
                   isLoading={isLoading}
                   isError={isError}
                 />
@@ -395,40 +244,93 @@ export default function Home() {
               </TabsContent>
             </Tabs>
           </TabsContent>
-          <TabsContent
-            value="incubator"
-            className="tab-content mt-2 flex flex-col gap-4"
-          >
-            <div className="flex gap-1 flex-col">
-              <h3 className="font-bold">Categories</h3>
-              <Categories />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {incubatorProjects
-                ?.filter(
-                  (project) =>
-                    !selectedTag || project.tags.includes(selectedTag)
-                )
-                .map((project) => (
-                  <ProjectCard key={project.id} project={project} />
-                ))}
-            </div>
-          </TabsContent>
           <TabsContent value="artists" className="tab-content">
-            <div className="w-full bg-white rounded-lg py-8 shadow flex items-center justify-center flex-col gap-4">
-              <div className="flex flex-col items-center">
-                <h2 className="text-2xl font-bold">Coming soon</h2>
-                <span className=" text-zinc-500">
-                  Join our Discord to apply
-                </span>
+            <div className="w-full bg-white rounded-lg shadow">
+              <div className="px-8 py-6 space-y-6">
+                {/* Header & Prompt Combined */}
+                <div>
+                  <h2 className="text-2xl font-bold">Team1 Art Club - Cohort 1</h2>
+                  <p className="text-zinc-600 mt-1 mb-4">Submit artwork based on the prompt below</p>
+                  <div className="bg-zinc-50 rounded-lg p-4 border border-zinc-200">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm text-zinc-600">Current Prompt:</span>
+                      <span className="text-lg font-bold text-zinc-800">&quot;Wolfi&quot;</span>
+                    </div>
+                    <p className="text-zinc-600 text-sm">
+                      Create original artwork featuring the Avalanche mascot, suitable for NFT minting
+                    </p>
+                  </div>
+                </div>
+
+                {/* Process & Benefits Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* How It Works */}
+                  <div>
+                    <h3 className="font-bold mb-3">How It Works</h3>
+                    <div className="space-y-2">
+                      <div className="flex gap-3">
+                        <span className="font-semibold text-zinc-700">1.</span>
+                        <div className="text-sm text-zinc-600">Submit your Wolfi artwork</div>
+                      </div>
+                      <div className="flex gap-3">
+                        <span className="font-semibold text-zinc-700">2.</span>
+                        <div className="text-sm text-zinc-600">Community votes (10 votes each)</div>
+                      </div>
+                      <div className="flex gap-3">
+                        <span className="font-semibold text-zinc-700">3.</span>
+                        <div className="text-sm text-zinc-600">Top 10% join the Art Club</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Benefits */}
+                  <div>
+                    <h3 className="font-bold mb-3">Club Benefits</h3>
+                    <div className="space-y-2">
+                      <div className="flex gap-3">
+                        <span className="text-zinc-400">•</span>
+                        <div className="text-sm text-zinc-600">Monthly AMAs with mentors</div>
+                      </div>
+                      <div className="flex gap-3">
+                        <span className="text-zinc-400">•</span>
+                        <div className="text-sm text-zinc-600">Skill development workshops</div>
+                      </div>
+                      <div className="flex gap-3">
+                        <span className="text-zinc-400">•</span>
+                        <div className="text-sm text-zinc-600">Exclusive Discord channels</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mentors & Partners - Compact */}
+                <div className="border-t border-zinc-200 pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-semibold text-zinc-700">Mentors:</span>
+                      <span className="text-zinc-600 ml-2">Wrath, Ly, Scribble, TimDraws & more</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-zinc-700">Partners:</span>
+                      <span className="text-zinc-600 ml-2">zeroone, Cozy, Salvor & Avax projects</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                  <button className="snow-button flex-1" disabled>
+                    Submissions Opening Soon
+                  </button>
+                  <a
+                    href="https://discord.gg/K4z7xxFVGc"
+                    target="_blank"
+                    className="snow-button-secondary flex-1 text-center"
+                  >
+                    Join Discord for Updates
+                  </a>
+                </div>
               </div>
-              <a
-                href="https://discord.gg/K4z7xxFVGc"
-                target="_blank"
-                className="snow-button"
-              >
-                Apply now
-              </a>
             </div>
           </TabsContent>
           {/* <TabsContent value="mint" className="tab-content">

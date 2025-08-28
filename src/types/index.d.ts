@@ -85,3 +85,31 @@ export interface IncubatorProject {
   social?: Social;
   tags: string[];
 }
+
+export interface ArtSubmission {
+  id: string;
+  artistAddress: string;
+  artistName?: string;
+  discordId?: string;
+  title: string;
+  description?: string;
+  artworkUrl: string;
+  cohort: number;
+  prompt: string;
+  status: 'pending' | 'approved' | 'rejected';
+  votesReceived: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CoffeeDonation {
+  id: string;
+  recipientAddress: string;
+  recipientName: string;
+  recipientAvatar?: string;
+  donorAddress: string;
+  amount: number;
+  message?: string;
+  transactionHash?: string;
+  createdAt: string;
+}
