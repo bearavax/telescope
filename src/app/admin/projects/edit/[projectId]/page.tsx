@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { ProjectForm } from "@/components/admin/ProjectForm";
-import { isAdmin } from "@/lib/auth";
+import { ProjectForm } from "@/features/admin/components/admin/ProjectForm";
+import { isAdmin } from "@/shared/utils/auth";
 
 interface Project {
   id: string;

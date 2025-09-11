@@ -4,11 +4,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 
-import { siteConfig } from "@/lib/site";
+import { siteConfig } from "@/shared/utils/site";
 import { ThemeProvider } from "next-themes";
-import { Web3Provider } from "@/components/providers/web3";
-import { Toaster } from "@/components/ui/toaster";
-import { Navbar } from "@/components/navbar";
+import { Web3Provider } from "@/shared/components/providers/web3";
+import { Toaster } from "@/shared/components/ui/toaster";
+import { Navbar } from "@/shared/components/navbar";
 import { Analytics } from "@vercel/analytics/react"
 
 // const geistSans = localFont({

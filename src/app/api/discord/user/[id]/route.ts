@@ -1,4 +1,4 @@
-import { env } from "@/env";
+import { env } from "@/core/config/env";
 import { NextRequest, NextResponse } from "next/server";
 
 interface DiscordUser {

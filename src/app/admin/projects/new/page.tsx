@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ProjectForm } from "@/components/admin/ProjectForm";
+import { ProjectForm } from "@/features/admin/components/admin/ProjectForm";
 import { useAccount } from "wagmi";
-import { useAdminStatus } from "@/hooks/use-admin-status";
+import { useAdminStatus } from "@/shared/hooks/use-admin-status";
 import { Address } from "viem";
 
 export default function NewProjectPage() {

@@ -1,11 +1,11 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { prisma } from "@/lib/prisma";
+import { Button } from "@/shared/components/ui/button";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { prisma } from "@/shared/utils/prisma";
 import { ArrowLeftIcon, PlusIcon } from "lucide-react";
 import Link from "next/link";
-import { AdminWrapper } from "@/components/admin/AdminWrapper";
+import { AdminWrapper } from "@/features/admin/components/admin/AdminWrapper";
 import { DeleteProjectButton } from "./DeleteProjectButton";
-import { getTextColorClass } from "@/lib/utils";
+import { getTextColorClass } from "@/shared/utils/utils";
 
 interface Project {
   id: string;

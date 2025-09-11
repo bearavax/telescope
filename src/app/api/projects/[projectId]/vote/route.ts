@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/shared/utils/prisma";
 import { z } from "zod";
-import { findOrCreateUser } from "@/lib/user";
-import { calculateLevel } from "@/lib/xp";
+import { findOrCreateUser } from "@/shared/utils/user";
+import { calculateLevel } from "@/shared/utils/xp";
 
 const voteSchema = z.object({
   walletAddress: z

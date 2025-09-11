@@ -1,143 +1,234 @@
-# Telescope Platform Documentation
+# Telescope Platform
 
-## Development Setup
+A Web3 platform for discovering and voting on Avalanche projects, featuring NFT galleries, KOL token tracking, and community-driven project curation.
 
-1. **Install dependencies:**
+## 🌟 Features
+
+### Core Functionality
+- **Project Discovery**: Browse and vote on Avalanche ecosystem projects
+- **NFT Gallery**: Explore NFT collections with advanced filtering and search
+- **KOL Tracking**: Monitor Key Opinion Leader tokens and their market performance
+- **User Profiles**: Track XP, voting history, and wallet class badges
+- **Seasonal Voting**: Multi-season project voting system with different categories
+
+### Technical Features
+- **Web3 Integration**: Wallet connection via RainbowKit and Wagmi
+- **Real-time Data**: Live price monitoring and market data updates
+- **Discord Integration**: User authentication and reward distribution
+- **Admin Panel**: Project management and voting controls
+- **Responsive Design**: Mobile-first UI with Tailwind CSS
+
+## 🏗️ Architecture
+
+### Frontend
+- **Framework**: Next.js 14 with App Router
+- **Styling**: Tailwind CSS with custom components
+- **State Management**: TanStack Query for server state
+- **Web3**: RainbowKit + Wagmi for wallet integration
+- **UI Components**: Radix UI primitives with custom styling
+
+### Backend
+- **Database**: MongoDB with Prisma ORM
+- **Authentication**: NextAuth.js with Discord provider
+- **API Routes**: Next.js API routes for data fetching
+- **External APIs**: DexScreener, CoinGecko, YourWorth integration
+
+### Data Models
+- **Users**: Wallet addresses, XP, voting history, Discord integration
+- **Projects**: Project metadata, social links, voting statistics
+- **KOLs**: Token data, market caps, price tracking
+- **Votes**: User voting history and streak tracking
+- **Art Submissions**: Community art submissions and voting
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- MongoDB Atlas account
+- Discord Developer Application
+- WalletConnect Project ID
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd telescope
+   ```
+
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-2. **Set up environment variables:**
-   Create `.env` file in the root directory with:
-   ```plaintext
-   DATABASE_URL="mongodb+srv://<username>:<password>@cluster.xxxxx.mongodb.net/database_name?retryWrites=true&w=majority"
-   DISCORD_CLIENT_ID=your_discord_client_id
-   DISCORD_CLIENT_SECRET=your_discord_client_secret
-   DISCORD_BOT_TOKEN=your_discord_bot_token
-   NEXTAUTH_SECRET=your_nextauth_secret
-   NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your_wc_project_id
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Configure the following variables:
+   ```env
+   DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/database"
+   DISCORD_CLIENT_ID="your_discord_client_id"
+   DISCORD_CLIENT_SECRET="your_discord_client_secret"
+   DISCORD_BOT_TOKEN="your_discord_bot_token"
+   NEXTAUTH_SECRET="your_nextauth_secret"
+   NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID="your_wc_project_id"
+   NEXT_PUBLIC_APP_URL="http://localhost:3000"
    ```
 
-3. **Database setup:**
+4. **Set up the database**
    ```bash
    npx prisma generate
    npx prisma db push
    ```
 
-### Environment Variables Generation
-
-1. **Generate NextAuth secret:**
+5. **Start the development server**
    ```bash
-   openssl rand -base64 32
+   npm run dev
    ```
 
-2. **Get Discord credentials:**
-   - Create application at [Discord Developer Portal](https://discord.com/developers/applications)
-   - Add redirect URI: `http://localhost:3000/api/auth/callback/discord`
+## 📁 Project Structure
 
-3. **WalletConnect Project ID:**
-   - Create project at [WalletConnect Cloud](https://cloud.walletconnect.com)
-   - Use the project ID in your `.env`
+```
+telescope/
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── api/               # API routes
+│   │   │   ├── auth/          # Authentication endpoints
+│   │   │   ├── kol/           # KOL token management
+│   │   │   ├── monitoring/    # Price monitoring
+│   │   │   ├── nft-collections/ # NFT collection APIs
+│   │   │   ├── projects/      # Project management
+│   │   │   └── users/         # User data endpoints
+│   │   ├── admin/             # Admin dashboard
+│   │   ├── artists/           # Artists page
+│   │   ├── gallery/           # NFT gallery
+│   │   ├── kol/               # KOL tokens page
+│   │   ├── news/              # News feed
+│   │   ├── profile/           # User profiles
+│   │   └── projects/          # Projects page
+│   ├── components/            # React components
+│   │   ├── ui/                # Base UI components
+│   │   ├── admin/             # Admin-specific components
+│   │   └── *.tsx              # Feature components
+│   ├── hooks/                 # Custom React hooks
+│   ├── lib/                   # Utility functions
+│   ├── services/              # External service integrations
+│   └── types/                 # TypeScript type definitions
+├── prisma/
+│   └── schema.prisma          # Database schema
+├── public/                    # Static assets
+│   ├── avatars/              # User avatars
+│   ├── puppets/              # NFT images and metadata
+│   └── stickers/             # UI stickers
+└── package.json
+```
 
-4. **MongoDB connection:**
-   - Create free cluster at [MongoDB Atlas](https://www.mongodb.com/atlas)
-   - Whitelist IP `0.0.0.0/0` (temporarily for development)
-   - Get connection string from "Connect" button
-   - PD: Ask for access for production connection string
+## 🔧 Key Components
 
-## Data Import Formats
+### Pages
+- **Home**: Project showcase, news feed, and featured content
+- **Gallery**: NFT collection browser with filtering
+- **Artists**: Community artist showcase
+- **Projects**: Project voting and discovery
+- **KOL**: Key Opinion Leader token tracking
+- **Profile**: User profile with voting history and stats
 
-Sample data files should be placed in `/prisma/seeds/`
+### API Endpoints
+- **Authentication**: Discord OAuth integration
+- **Projects**: CRUD operations for project management
+- **KOLs**: Token data fetching and price monitoring
+- **NFTs**: Collection data and search functionality
+- **Users**: Profile data and voting statistics
 
-1. **Users (JSON):**
-   ```json
-   {
-     "address": "0x...",
-     "discordId": "123456789",
-     "xp": 0,
-     "level": 1,
-     "streak": 0,
-     "longestStreak": 0
-   }
-   ```
+### Services
+- **Price Monitor**: Real-time token price updates
+- **YourWorth Scraper**: KOL data extraction
+- **Blockchain Monitor**: On-chain data tracking
 
-2. **Projects (JSON):**
-   ```json
-   {
-     "name": "Project Name",
-     "description": "Project Description",
-     "avatar": "https://...",
-     "tags": ["defi", "nft"],
-     "social": {
-       "twitter": "https://...",
-       "discord": "https://...",
-       "website": "https://..."
-     }
-   }
-   ```
+## 🎨 UI/UX Features
 
-3. **Incubator Projects (JSON):**
-   ```json
-   {
-     "title": "Project Title",
-     "description": "Project Description",
-     "logo": "https://...", // Image should be 120x120px, PNG/JPG format
-     "status": "live",
-     "launchDate": {
-       "$date": "2024-03-20T00:00:00Z"
-     },
-     "createdAt": {
-       "$date": "2024-12-15T19:07:12.808Z"
-     },
-     "tags": ["presale", "new"],
-     "social": {
-       "dexscreener": "https://...",
-       "contractAddress": "0x..."
-     }
-   }
-   ```
+### Design System
+- **Color Scheme**: Custom palette with dark/light mode support
+- **Typography**: Geist font family for modern readability
+- **Components**: Consistent design language across all pages
+- **Responsive**: Mobile-first design with tablet/desktop optimization
 
-## Data Import Commands
+### User Experience
+- **Wallet Integration**: Seamless Web3 wallet connection
+- **Real-time Updates**: Live data without page refreshes
+- **Intuitive Navigation**: Clear information architecture
+- **Performance**: Optimized loading and caching strategies
 
-1. **Import using mongoimport:**
-   ```bash
-   mongoimport --uri="DATABASE_URL" --collection=User --file=./prisma/seeds/users.json --jsonArray
-   mongoimport --uri="DATABASE_URL" --collection=Project --file=./prisma/seeds/projects.json --jsonArray
-   mongoimport --uri="DATABASE_URL" --collection=IncubatorProject --file=./prisma/seeds/incubator.json --jsonArray
-   ```
+## 🔐 Security
 
-2. **Or use Prisma client:**
-   Create `seed.ts` file and run:
-   ```bash
-   npx prisma db seed
-   ```
+### Authentication
+- **Discord OAuth**: Secure user authentication
+- **Wallet Verification**: Message signing for wallet ownership
+- **Admin Controls**: Role-based access control
 
-## Required Files
+### Data Protection
+- **Environment Variables**: Sensitive data in environment files
+- **API Security**: Rate limiting and input validation
+- **Database Security**: MongoDB Atlas with proper access controls
 
-1. **Prisma Schema:** `prisma/schema.prisma`
-2. **Environment Config:** `src/env.ts`
-3. **Type Definitions:** `src/types/project.ts`
+## 🚀 Deployment
 
-## Running the Project
+### Vercel (Recommended)
+1. Connect your GitHub repository to Vercel
+2. Configure environment variables in Vercel dashboard
+3. Deploy automatically on push to main branch
 
-- **Start development server:**
-  ```bash
-  npm run dev
-  ```
+### Manual Deployment
+1. Build the application: `npm run build`
+2. Start the production server: `npm start`
+3. Configure your web server to serve the application
 
-- **Production build:**
-  ```bash
-  npm run build
-  npm start
-  ```
+## 📊 Monitoring
 
-## Troubleshooting
+### Price Monitoring
+- **Real-time Updates**: Token prices updated every 2 minutes
+- **Multiple Sources**: DexScreener, CoinGecko, and Moralis APIs
+- **Error Handling**: Graceful fallbacks for API failures
 
-**Common issues:**
-- MongoDB connection failures: Verify `DATABASE_URL` format and IP whitelisting.
-- Missing Discord env vars: All `DISCORD_` variables must be set.
-- Schema mismatches: Run `npx prisma generate` after schema changes.
-- Vote validation errors: Ensure user has connected Discord account.
+### User Analytics
+- **Voting Patterns**: Track user engagement and preferences
+- **Performance Metrics**: Monitor application performance
+- **Error Tracking**: Comprehensive error logging and monitoring
 
-For voting system implementation details, see:
-`src/app/api/projects/[projectId]/vote/route.ts` (lines 7-164)
+## 🤝 Contributing
+
+### Development Workflow
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+### Code Standards
+- **TypeScript**: Strict type checking enabled
+- **ESLint**: Code quality and consistency
+- **Prettier**: Code formatting
+- **Component Structure**: Consistent component organization
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- **Avalanche Community**: For the vibrant ecosystem
+- **Open Source Libraries**: All the amazing tools that make this possible
+- **Contributors**: Everyone who helps improve the platform
+
+## 📞 Support
+
+For support, questions, or feature requests:
+- **Discord**: Join our community server
+- **GitHub Issues**: Report bugs or request features
+- **Email**: Contact the development team
+
+---
+
+Built with ❤️ by the Isbjorn team
