@@ -24,6 +24,7 @@ model User {
   longestStreak  Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  lastActive DateTime?
   votes     Vote[]
   votesS1   VoteS1[]
   artVotes  ArtVote[]
@@ -144,6 +145,7 @@ model Board {
   title       String   // e.g., "General AVAX"
   description String
   createdAt   DateTime @default(now())
+  totalThreadsCreated Int @default(0) // All-time thread count for unlock tracking
   threads     Thread[]
 }
 

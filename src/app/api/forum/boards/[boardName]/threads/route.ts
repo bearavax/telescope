@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createHash } from "crypto";
+import { awardPostXP } from "@/lib/xp-system";
 
 // Generate unique poster ID (same wallet = same ID per board)
 function generatePosterId(walletAddress: string, boardName: string): string {
@@ -65,18 +66,6 @@ export async function POST(
       );
     }
 
-    // Verify user has a Discord account connected
-    const user = await prisma.user.findUnique({
-      where: { address: walletAddress }
-    });
-
-    if (!user || !user.discordId) {
-      return NextResponse.json(
-        { error: "Must connect Discord account to post" },
-        { status: 403 }
-      );
-    }
-
     const board = await prisma.board.findUnique({
       where: { name: boardName }
     });
@@ -90,8 +79,43 @@ export async function POST(
 
     const posterId = generatePosterId(walletAddress, boardName);
 
+    // Ensure user exists
+    await prisma.user.upsert({
+      where: { address: walletAddress },
+      create: { address: walletAddress },
+      update: {}
+    });
+
+    // Check and award XP BEFORE creating the post
+    const xpResult = await awardPostXP(walletAddress);
+
     // Create thread and first post in a transaction
     const result = await prisma.$transaction(async (tx) => {
+      // Check if board is at max threads (90)
+      const threadCount = await tx.thread.count({
+        where: { boardId: board.id }
+      });
+
+      // If at max, delete the oldest (least recently bumped) thread
+      if (threadCount >= 90) {
+        const oldestThread = await tx.thread.findFirst({
+          where: { boardId: board.id },
+          orderBy: { bumpedAt: 'asc' },
+          include: { posts: true }
+        });
+
+        if (oldestThread) {
+          // Delete all posts in the thread first
+          await tx.post.deleteMany({
+            where: { threadId: oldestThread.id }
+          });
+          // Then delete the thread
+          await tx.thread.delete({
+            where: { id: oldestThread.id }
+          });
+        }
+      }
+
       const thread = await tx.thread.create({
         data: {
           boardId: board.id,
@@ -113,13 +137,22 @@ export async function POST(
         }
       });
 
+      // Increment all-time thread count for unlock tracking
+      await tx.board.update({
+        where: { id: board.id },
+        data: { totalThreadsCreated: { increment: 1 } }
+      });
+
       return { thread, post };
     });
 
     return NextResponse.json({
       success: true,
       threadId: result.thread.id,
-      postId: result.post.id
+      postId: result.post.id,
+      xpAwarded: xpResult.xpAwarded,
+      newXp: xpResult.newXp,
+      newLevel: xpResult.newLevel
     });
   } catch (error) {
     console.error("Error creating thread:", error);

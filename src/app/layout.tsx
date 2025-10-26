@@ -9,6 +9,7 @@ import { ThemeProvider } from "next-themes";
 import { Web3Provider } from "@/components/providers/web3";
 import { Toaster } from "@/components/ui/toaster";
 import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 import { Analytics } from "@vercel/analytics/react"
 
 // const geistSans = localFont({
@@ -69,7 +70,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`antialiased`}
       >
@@ -78,6 +79,7 @@ export default function RootLayout({
             <Toaster />
             <Navbar />
             {children}
+            <Footer />
           </Web3Provider>
         </ThemeProvider>
         <Analytics />

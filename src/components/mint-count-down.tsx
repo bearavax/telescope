@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 interface MintCountDownProps {
     end: number;
 }
 
 export function MintCountDown({ end }: MintCountDownProps): JSX.Element {
-    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
-
-    function calculateTimeLeft() {
+    const calculateTimeLeft = useCallback(() => {
         const now = Math.floor(Date.now() / 1000);
         const difference = Math.max(0, end - now);
 
@@ -18,7 +16,9 @@ export function MintCountDown({ end }: MintCountDownProps): JSX.Element {
         const seconds = difference % 60;
 
         return { hours, minutes, seconds };
-    }
+    }, [end]);
+
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -26,7 +26,7 @@ export function MintCountDown({ end }: MintCountDownProps): JSX.Element {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [end]);
+    }, [calculateTimeLeft]);
 
     return (
         <div className="font-semibold text-[40px]">

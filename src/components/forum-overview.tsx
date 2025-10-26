@@ -1,17 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, TrendingUp, Users } from "lucide-react";
+import { MessageSquare, TrendingUp, Users, Clock, CheckCircle, XCircle, Lock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useAccount } from "wagmi";
+import { Address } from "viem";
+import { useActivityTracker } from "@/hooks/use-activity-tracker";
 
 interface Board {
   id: string;
   name: string;
   title: string;
   description: string;
+  totalThreadsCreated: number;
   _count: {
     threads: number;
   };
@@ -28,85 +32,172 @@ interface Thread {
     id: string;
     comment: string;
     posterId: string;
+    imageHash: string | null;
   }>;
 }
 
-interface BoardWithThreads extends Board {
-  threads: Thread[];
-}
-
 export function ForumOverview() {
+  const { address, isConnected } = useAccount();
+  useActivityTracker(); // Track user activity
   const [boards, setBoards] = useState<Board[]>([]);
   const [recentThreads, setRecentThreads] = useState<Array<Thread & { boardName: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ totalBoards: 0, totalThreads: 0 });
+  
+  // Define unlock thresholds
+  const unlockThresholds = {
+    'Development & Technical': 100,
+    'DeFi & Trading': 500,
+    'Projects & Applications': 1000,
+    'Governance & Institutional': 2000
+  };
+  const [activeUsers, setActiveUsers] = useState(0);
+  const [timeUntilReset, setTimeUntilReset] = useState("");
+  const [earnedToday, setEarnedToday] = useState(false);
 
   useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date();
+      const tomorrow = new Date();
+      tomorrow.setUTCHours(24, 0, 0, 0); // Next midnight UTC
+      
+      const diff = tomorrow.getTime() - now.getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      setTimeUntilReset(`${hours}h ${minutes}m ${seconds}s`);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const checkTodayXP = async () => {
+      if (!address) {
+        setEarnedToday(false);
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/users/${address}/streak`);
+        const data = await response.json();
+        
+        if (data.lastPostDate) {
+          const lastPost = new Date(data.lastPostDate);
+          const now = new Date();
+          
+          // Compare just the UTC date strings (YYYY-MM-DD)
+          const lastPostDateStr = lastPost.toISOString().split('T')[0];
+          const todayDateStr = now.toISOString().split('T')[0];
+          
+          const isToday = lastPostDateStr === todayDateStr;
+          console.log('XP check - LastPost date:', lastPostDateStr, 'Today date:', todayDateStr, 'Equal?', isToday);
+          setEarnedToday(isToday);
+        } else {
+          console.log('No last post date, XP available');
+          setEarnedToday(false);
+        }
+      } catch (error) {
+        console.error("Error checking XP status:", error);
+        setEarnedToday(false);
+      }
+    };
+
+    // Immediately reset state when address changes
+    setEarnedToday(false);
+    
+    checkTodayXP();
+    
+    // Poll every 30 seconds to check if XP was earned
+    const interval = setInterval(checkTodayXP, 30000);
+    return () => clearInterval(interval);
+  }, [address]); // Re-run when address changes
+
+  useEffect(() => {
+    const fetchActiveUsers = async () => {
+      try {
+        const response = await fetch('/api/users/active');
+        const data = await response.json();
+        // Show at least 1 if user is connected (they are active)
+        const count = data.activeCount || 0;
+        setActiveUsers(isConnected ? Math.max(count, 1) : count);
+      } catch (error) {
+        console.error("Error fetching active users:", error);
+      }
+    };
+
+    fetchActiveUsers();
+    
+    // Poll every 30 seconds
+    const interval = setInterval(fetchActiveUsers, 30000);
+    return () => clearInterval(interval);
+  }, [isConnected]);
+
+  useEffect(() => {
+    const calculateTrendingScore = (thread: Thread): number => {
+      const now = new Date().getTime();
+      const bumpedAt = new Date(thread.bumpedAt).getTime();
+      const createdAt = new Date(thread.createdAt).getTime();
+
+      const hoursSinceLastBump = (now - bumpedAt) / (1000 * 60 * 60);
+      const hoursSinceCreation = (now - createdAt) / (1000 * 60 * 60);
+
+      // Trending score: higher for more replies, recent activity, and newer threads
+      // Formula: (replies * 10) / (hours since bump + 2) + bonus for new threads
+      const engagementScore = (thread.replyCount * 10) / (hoursSinceLastBump + 2);
+      const recencyBonus = hoursSinceCreation < 24 ? 5 : 0;
+
+      return engagementScore + recencyBonus;
+    };
+
+    const fetchForumData = async () => {
+      try {
+        // Fetch boards and trending threads in parallel
+        const [boardsResponse, trendingResponse] = await Promise.all([
+          fetch("/api/forum/boards"),
+          fetch("/api/forum/trending")
+        ]);
+
+        const boardsData = await boardsResponse.json();
+        const trendingData = await trendingResponse.json();
+
+        if (Array.isArray(boardsData)) {
+          setBoards(boardsData);
+
+          // Calculate stats - use totalThreadsCreated for unlock tracking (all-time)
+          const totalThreadsCreated = boardsData.reduce((sum, board) => sum + (board.totalThreadsCreated || 0), 0);
+          setStats({
+            totalBoards: boardsData.length,
+            totalThreads: totalThreadsCreated // Use all-time count for unlocks
+          });
+        }
+
+        if (Array.isArray(trendingData)) {
+          // Calculate trending scores and sort
+          const threadsWithScores = trendingData.map(thread => ({
+            ...thread,
+            trendingScore: calculateTrendingScore(thread)
+          }));
+
+          const trendingThreads = threadsWithScores
+            .sort((a, b) => b.trendingScore - a.trendingScore)
+            .slice(0, 10);
+
+          setRecentThreads(trendingThreads);
+        }
+      } catch (error) {
+        console.error("Error fetching forum data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchForumData();
   }, []);
 
-  const calculateTrendingScore = (thread: Thread): number => {
-    const now = new Date().getTime();
-    const bumpedAt = new Date(thread.bumpedAt).getTime();
-    const createdAt = new Date(thread.createdAt).getTime();
-
-    const hoursSinceLastBump = (now - bumpedAt) / (1000 * 60 * 60);
-    const hoursSinceCreation = (now - createdAt) / (1000 * 60 * 60);
-
-    // Trending score: higher for more replies, recent activity, and newer threads
-    // Formula: (replies * 10) / (hours since bump + 2) + bonus for new threads
-    const engagementScore = (thread.replyCount * 10) / (hoursSinceLastBump + 2);
-    const recencyBonus = hoursSinceCreation < 24 ? 5 : 0;
-
-    return engagementScore + recencyBonus;
-  };
-
-  const fetchForumData = async () => {
-    try {
-      // Fetch boards
-      const boardsResponse = await fetch("/api/forum/boards");
-      const boardsData = await boardsResponse.json();
-
-      if (Array.isArray(boardsData)) {
-        setBoards(boardsData);
-
-        // Calculate stats
-        const totalThreads = boardsData.reduce((sum, board) => sum + board._count.threads, 0);
-        setStats({
-          totalBoards: boardsData.length,
-          totalThreads
-        });
-
-        // Fetch threads from all boards
-        const threadsPromises = boardsData.map(async (board) => {
-          const response = await fetch(`/api/forum/boards/${board.name}/threads`);
-          const threads = await response.json();
-          return Array.isArray(threads)
-            ? threads.map((t: Thread) => ({ ...t, boardName: board.name }))
-            : [];
-        });
-
-        const threadsArrays = await Promise.all(threadsPromises);
-        const allThreads = threadsArrays.flat();
-
-        // Calculate trending scores and sort
-        const threadsWithScores = allThreads.map(thread => ({
-          ...thread,
-          trendingScore: calculateTrendingScore(thread)
-        }));
-
-        const trendingThreads = threadsWithScores
-          .sort((a, b) => b.trendingScore - a.trendingScore)
-          .slice(0, 10);
-
-        setRecentThreads(trendingThreads);
-      }
-    } catch (error) {
-      console.error("Error fetching forum data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -127,6 +218,66 @@ export function ForumOverview() {
 
   return (
     <div className="space-y-6">
+      {/* Stats Bar */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <Card className="p-2 bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-primary/10 rounded-lg">
+              <MessageSquare className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-lg font-bold">{stats.totalBoards}</p>
+              <p className="text-xs text-muted-foreground">Total Boards</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-2 bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg" style={{ backgroundColor: '#3c688f15' }}>
+              <TrendingUp className="h-4 w-4" style={{ color: '#3c688f' }} />
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-lg font-bold">{stats.totalThreads}</p>
+              <p className="text-xs text-muted-foreground">Total Threads</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-2 bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-green-500/10 rounded-lg">
+              <Users className="h-4 w-4 text-green-500" />
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-lg font-bold">{activeUsers}</p>
+              <p className="text-xs text-muted-foreground">Active Now</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-2 bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg" style={{ backgroundColor: isConnected && earnedToday ? '#22c55e15' : '#52525b15' }}>
+              {isConnected && earnedToday ? (
+                <CheckCircle className="h-4 w-4 text-green-500" />
+              ) : (
+                <Clock className="h-4 w-4 text-zinc-400" />
+              )}
+            </div>
+            <div className="flex flex-col">
+              {isConnected ? (
+                <div className="flex items-baseline gap-1.5">
+                  <p className="text-xs font-semibold">{earnedToday ? 'XP Earned' : '1 XP Available'}</p>
+                </div>
+              ) : (
+                <div className="flex items-baseline gap-1.5">
+                  <p className="text-xs font-semibold">Daily XP Reset</p>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground font-mono">{timeUntilReset}</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
       {/* Trending Threads */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -135,39 +286,52 @@ export function ForumOverview() {
             Trending Threads
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {recentThreads.length > 0 ? (
-            recentThreads.map((thread) => (
+            recentThreads.slice(0, 3).map((thread) => (
               <Link key={thread.id} href={`/forum/thread/${thread.id}`}>
-                <Card className="p-4 hover:border-primary transition-colors cursor-pointer h-full">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-start gap-2">
-                      {thread.subject && (
-                        <h3 className="font-semibold text-sm truncate flex-1">
-                          {thread.subject}
-                        </h3>
-                      )}
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatDistanceToNow(new Date(thread.bumpedAt), { addSuffix: true })}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {thread.posts[0]?.comment || "No content"}
-                    </p>
-                    <div className="flex gap-2 items-center">
-                      <Badge variant="outline" className="text-xs">
-                        /{thread.boardName}/
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {thread.replyCount} replies
-                      </span>
+                <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
+                  <div className="flex gap-3 p-3">
+                    {thread.posts[0]?.imageHash && (
+                      <div className="w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                        <img 
+                          src={thread.posts[0].imageHash} 
+                          alt={thread.subject || 'Thread image'} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex justify-between items-start gap-2">
+                          {thread.subject && (
+                            <h3 className="font-semibold text-sm truncate flex-1">
+                              {thread.subject}
+                            </h3>
+                          )}
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {formatDistanceToNow(new Date(thread.bumpedAt), { addSuffix: true })}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {thread.posts[0]?.comment || "No content"}
+                        </p>
+                        <div className="flex gap-2 items-center">
+                          <Badge variant="outline" className="text-xs" style={{ color: '#3c688f' }}>
+                            /{thread.boardName}/
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {thread.replyCount} replies
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </Card>
               </Link>
             ))
           ) : (
-            <Card className="p-8 text-center col-span-2">
+            <Card className="p-8 text-center col-span-3">
               <p className="text-muted-foreground text-sm">No threads yet</p>
             </Card>
           )}
@@ -182,10 +346,10 @@ export function ForumOverview() {
             Boards
           </h2>
         </div>
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* General Discussion */}
           <div>
-            <h3 className="text-sm font-bold text-muted-foreground mb-2">General Discussion</h3>
+            <h3 className="text-sm font-bold text-muted-foreground mb-3">General Discussion</h3>
             <Card className="overflow-hidden">
               <div className="divide-y">
                 {boards.filter(b => ['gen', 'drama'].includes(b.name)).sort((a, b) => {
@@ -195,16 +359,16 @@ export function ForumOverview() {
                   <Link key={board.id} href={`/forum/${board.name}`}>
                     <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                       <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <h3 className="font-bold text-sm whitespace-nowrap text-primary">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f', textShadow: '0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4)' }}>
                             /{board.name}/
                           </h3>
-                          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 flex-1 min-w-0">
+                          <div className="flex flex-col gap-1 flex-1 min-w-0">
                             <span className="font-semibold text-sm truncate">
                               {board.title}
                             </span>
-                            <span className="text-xs text-muted-foreground truncate hidden md:block">
-                              - {board.description}
+                            <span className="text-xs text-muted-foreground truncate">
+                              {board.description}
                             </span>
                           </div>
                         </div>
@@ -221,28 +385,38 @@ export function ForumOverview() {
 
           {/* Development & Technical */}
           <div>
-            <h3 className="text-sm font-bold text-muted-foreground mb-2">Development & Technical</h3>
-            <Card className="overflow-hidden">
+            <h3 className="text-sm font-bold text-muted-foreground mb-3">
+              Development & Technical
+              {stats.totalThreads < unlockThresholds['Development & Technical'] && (
+                <span className="ml-2 text-xs inline-flex items-center gap-1 text-muted-foreground">
+                  <Lock className="h-3 w-3" /> {unlockThresholds['Development & Technical']} threads to unlock
+                </span>
+              )}
+            </h3>
+            <Card className={`overflow-hidden ${stats.totalThreads < unlockThresholds['Development & Technical'] ? 'opacity-40 pointer-events-none' : ''}`}>
               <div className="divide-y">
-                {boards.filter(b => ['tech', 'dev', 'sec', 'bridge'].includes(b.name)).map((board) => (
+                {boards.filter(b => ['bridge', 'tech', 'sec', 'dev'].includes(b.name)).sort((a, b) => {
+                  const order = ['bridge', 'tech', 'sec', 'dev'];
+                  return order.indexOf(a.name) - order.indexOf(b.name);
+                }).map((board) => (
                   <Link key={board.id} href={`/forum/${board.name}`}>
                     <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                       <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <h3 className="font-bold text-sm whitespace-nowrap text-primary">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f', textShadow: '0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4)' }}>
                             /{board.name}/
                           </h3>
-                          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 flex-1 min-w-0">
+                          <div className="flex flex-col gap-1 flex-1 min-w-0">
                             <span className="font-semibold text-sm truncate">
                               {board.title}
                             </span>
-                            <span className="text-xs text-muted-foreground truncate hidden md:block">
-                              - {board.description}
+                            <span className="text-xs text-muted-foreground truncate">
+                              {board.description}
                             </span>
                           </div>
                         </div>
                         <Badge variant="secondary" className="shrink-0">
-                          {board._count.threads}
+                          <Lock className="h-3 w-3" />
                         </Badge>
                       </div>
                     </div>
@@ -254,31 +428,38 @@ export function ForumOverview() {
 
           {/* DeFi & Trading */}
           <div>
-            <h3 className="text-sm font-bold text-muted-foreground mb-2">DeFi & Trading</h3>
-            <Card className="overflow-hidden">
+            <h3 className="text-sm font-bold text-muted-foreground mb-3">
+              DeFi & Trading
+              {stats.totalThreads < unlockThresholds['DeFi & Trading'] && (
+                <span className="ml-2 text-xs inline-flex items-center gap-1 text-muted-foreground">
+                  <Lock className="h-3 w-3" /> {unlockThresholds['DeFi & Trading']} threads to unlock
+                </span>
+              )}
+            </h3>
+            <Card className={`overflow-hidden ${stats.totalThreads < unlockThresholds['DeFi & Trading'] ? 'opacity-40 pointer-events-none' : ''}`}>
               <div className="divide-y">
-                {boards.filter(b => ['defi', 'price', 'rwa', 'meme'].includes(b.name)).sort((a, b) => {
-                  const order = ['defi', 'price', 'rwa', 'meme'];
+                {boards.filter(b => ['defi', 'price', 'meme'].includes(b.name)).sort((a, b) => {
+                  const order = ['defi', 'price', 'meme'];
                   return order.indexOf(a.name) - order.indexOf(b.name);
                 }).map((board) => (
                   <Link key={board.id} href={`/forum/${board.name}`}>
                     <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                       <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <h3 className="font-bold text-sm whitespace-nowrap text-primary">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f', textShadow: '0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4)' }}>
                             /{board.name}/
                           </h3>
-                          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 flex-1 min-w-0">
+                          <div className="flex flex-col gap-1 flex-1 min-w-0">
                             <span className="font-semibold text-sm truncate">
                               {board.title}
                             </span>
-                            <span className="text-xs text-muted-foreground truncate hidden md:block">
-                              - {board.description}
+                            <span className="text-xs text-muted-foreground truncate">
+                              {board.description}
                             </span>
                           </div>
                         </div>
                         <Badge variant="secondary" className="shrink-0">
-                          {board._count.threads}
+                          <Lock className="h-3 w-3" />
                         </Badge>
                       </div>
                     </div>
@@ -290,28 +471,38 @@ export function ForumOverview() {
 
           {/* Projects & Applications */}
           <div>
-            <h3 className="text-sm font-bold text-muted-foreground mb-2">Projects & Applications</h3>
-            <Card className="overflow-hidden">
+            <h3 className="text-sm font-bold text-muted-foreground mb-3">
+              Projects & Applications
+              {stats.totalThreads < unlockThresholds['Projects & Applications'] && (
+                <span className="ml-2 text-xs inline-flex items-center gap-1 text-muted-foreground">
+                  <Lock className="h-3 w-3" /> {unlockThresholds['Projects & Applications']} threads to unlock
+                </span>
+              )}
+            </h3>
+            <Card className={`overflow-hidden ${stats.totalThreads < unlockThresholds['Projects & Applications'] ? 'opacity-40 pointer-events-none' : ''}`}>
               <div className="divide-y">
-                {boards.filter(b => ['nft', 'game', 'eco'].includes(b.name)).map((board) => (
+                {boards.filter(b => ['nft', 'game', 'eco', 'adopt'].includes(b.name)).sort((a, b) => {
+                  const order = ['nft', 'game', 'eco', 'adopt'];
+                  return order.indexOf(a.name) - order.indexOf(b.name);
+                }).map((board) => (
                   <Link key={board.id} href={`/forum/${board.name}`}>
                     <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                       <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <h3 className="font-bold text-sm whitespace-nowrap text-primary">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f', textShadow: '0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4)' }}>
                             /{board.name}/
                           </h3>
-                          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 flex-1 min-w-0">
+                          <div className="flex flex-col gap-1 flex-1 min-w-0">
                             <span className="font-semibold text-sm truncate">
                               {board.title}
                             </span>
-                            <span className="text-xs text-muted-foreground truncate hidden md:block">
-                              - {board.description}
+                            <span className="text-xs text-muted-foreground truncate">
+                              {board.description}
                             </span>
                           </div>
                         </div>
                         <Badge variant="secondary" className="shrink-0">
-                          {board._count.threads}
+                          {board._count.threads === 0 ? <Lock className="h-3 w-3" /> : board._count.threads}
                         </Badge>
                       </div>
                     </div>
@@ -323,28 +514,38 @@ export function ForumOverview() {
 
           {/* Governance & Institutional */}
           <div>
-            <h3 className="text-sm font-bold text-muted-foreground mb-2">Governance & Institutional</h3>
-            <Card className="overflow-hidden">
+            <h3 className="text-sm font-bold text-muted-foreground mb-3">
+              Governance & Institutional
+              {stats.totalThreads < unlockThresholds['Governance & Institutional'] && (
+                <span className="ml-2 text-xs inline-flex items-center gap-1 text-muted-foreground">
+                  <Lock className="h-3 w-3" /> {unlockThresholds['Governance & Institutional']} threads to unlock
+                </span>
+              )}
+            </h3>
+            <Card className={`overflow-hidden ${stats.totalThreads < unlockThresholds['Governance & Institutional'] ? 'opacity-40 pointer-events-none' : ''}`}>
               <div className="divide-y">
-                {boards.filter(b => ['gov', 'inst', 'adopt', 'reg'].includes(b.name)).map((board) => (
+                {boards.filter(b => ['gov', 'inst', 'reg', 'rwa'].includes(b.name)).sort((a, b) => {
+                  const order = ['gov', 'inst', 'reg', 'rwa'];
+                  return order.indexOf(a.name) - order.indexOf(b.name);
+                }).map((board) => (
                   <Link key={board.id} href={`/forum/${board.name}`}>
                     <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                       <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <h3 className="font-bold text-sm whitespace-nowrap text-primary">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f', textShadow: '0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4)' }}>
                             /{board.name}/
                           </h3>
-                          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 flex-1 min-w-0">
+                          <div className="flex flex-col gap-1 flex-1 min-w-0">
                             <span className="font-semibold text-sm truncate">
                               {board.title}
                             </span>
-                            <span className="text-xs text-muted-foreground truncate hidden md:block">
-                              - {board.description}
+                            <span className="text-xs text-muted-foreground truncate">
+                              {board.description}
                             </span>
                           </div>
                         </div>
                         <Badge variant="secondary" className="shrink-0">
-                          {board._count.threads}
+                          {board._count.threads === 0 ? <Lock className="h-3 w-3" /> : board._count.threads}
                         </Badge>
                       </div>
                     </div>
@@ -356,42 +557,6 @@ export function ForumOverview() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <MessageSquare className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Boards</p>
-              <p className="text-2xl font-bold">{stats.totalBoards}</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-500/10 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Threads</p>
-              <p className="text-2xl font-bold">{stats.totalThreads}</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-green-500/10 rounded-lg">
-              <Users className="h-6 w-6 text-green-500" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Active Now</p>
-              <p className="text-2xl font-bold">-</p>
-            </div>
-          </div>
-        </Card>
-      </div>
     </div>
   );
 }

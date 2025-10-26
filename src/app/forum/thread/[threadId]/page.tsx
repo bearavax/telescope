@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { User } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +13,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useAccount } from "wagmi";
 import { useUserStats } from "@/hooks/use-user-stats";
 import { Address } from "viem";
+import { PageNavigation } from "@/components/page-navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Board {
   id: string;
@@ -26,6 +29,15 @@ interface Post {
   createdAt: string;
   isOp: boolean;
   walletAddress: string;
+  imageHash: string | null;
+  anonymous: boolean;
+  user?: {
+    createdAt: string;
+    postCount?: number;
+    discordId?: string;
+    username?: string;
+    discordAvatar?: string | null;
+  };
 }
 
 interface Thread {
@@ -39,6 +51,7 @@ interface Thread {
 
 export default function ThreadPage() {
   const params = useParams();
+  const queryClient = useQueryClient();
   const { address, isConnected } = useAccount();
   const threadId = params.threadId as string;
   const { data: userStats } = useUserStats(address as Address, isConnected);
@@ -48,7 +61,20 @@ export default function ThreadPage() {
   const [replying, setReplying] = useState(false);
   const [comment, setComment] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [stayAnonymous, setStayAnonymous] = useState(true);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [stayAnonymous, setStayAnonymous] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('stayAnonymous');
+      return saved !== null ? JSON.parse(saved) : false;
+    }
+    return false;
+  });
+
+  const handleAnonymousChange = (checked: boolean) => {
+    setStayAnonymous(checked);
+    localStorage.setItem('stayAnonymous', JSON.stringify(checked));
+  };
 
   useEffect(() => {
     fetchThread();
@@ -67,10 +93,29 @@ export default function ThreadPage() {
   };
 
   const createReply = async () => {
-    if (!address || !comment.trim() || !thread || !userStats?.discordId) return;
+    if (!address || !comment.trim() || !thread) return;
 
     setReplying(true);
     try {
+      let uploadedImageUrl = null;
+      
+      // Upload image if one is selected
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const uploadData = await uploadResponse.json();
+        
+        if (uploadData.url) {
+          uploadedImageUrl = uploadData.url;
+        }
+      }
+
       const response = await fetch(`/api/forum/threads/${threadId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -78,7 +123,7 @@ export default function ThreadPage() {
           comment,
           walletAddress: address,
           boardName: thread.board.name,
-          imageHash: imageUrl.trim() || null,
+          imageHash: uploadedImageUrl || imageUrl.trim() || null,
           anonymous: stayAnonymous
         })
       });
@@ -86,9 +131,14 @@ export default function ThreadPage() {
       const data = await response.json();
 
       if (data.success) {
+        if (data.xpAwarded) {
+          queryClient.invalidateQueries({ queryKey: ["userStats", address] });
+          alert(`Reply posted! You earned 1 XP. Total XP: ${data.newXp} (Level ${data.newLevel})`);
+        }
         setComment("");
         setImageUrl("");
-        setStayAnonymous(true);
+        setImageFile(null);
+        setImagePreview("");
         fetchThread(); // Refresh thread to show new reply
       }
     } catch (error) {
@@ -125,13 +175,17 @@ export default function ThreadPage() {
   }
 
   return (
-    <div className="w-full max-w-screen-lg mx-auto px-8 py-16">
-      <Link
-        href={`/forum/${thread.board.name}`}
-        className="text-primary hover:underline mb-2 inline-block"
-      >
-        ← Back to /{thread.board.name}/
-      </Link>
+    <div className="w-full">
+      <div className="w-full max-w-screen-lg mx-auto -mt-6 px-8 relative z-10 mb-4">
+        <PageNavigation />
+      </div>
+      <div className="w-full max-w-screen-lg mx-auto px-8 pb-16">
+        <Link
+          href={`/forum/${thread.board.name}`}
+          className="text-primary hover:underline mb-2 inline-block"
+        >
+          ← Back to /{thread.board.name}/
+        </Link>
 
       {thread.subject && (
         <h1 className="text-3xl font-bold mb-4">{thread.subject}</h1>
@@ -140,29 +194,70 @@ export default function ThreadPage() {
       <div className="space-y-4 mb-8">
         {thread.posts.map((post, index) => (
           <Card key={post.id} className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex gap-3 items-center">
-                <span className="font-semibold">Anonymous</span>
-                {post.isOp && <Badge>OP</Badge>}
-                <span className="text-sm text-muted-foreground">ID: {post.posterId}</span>
+            <div className="flex gap-4 mb-4">
+              {/* User Avatar */}
+              {post.anonymous ? (
+                <div className="w-12 h-12 rounded-lg bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center flex-shrink-0">
+                  <User className="h-6 w-6 text-zinc-400 dark:text-zinc-500" />
+                </div>
+              ) : post.user?.discordAvatar ? (
+                <img 
+                  src={post.user.discordAvatar} 
+                  alt="Profile" 
+                  className="w-12 h-12 rounded-lg flex-shrink-0 object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <User className="h-6 w-6 text-primary" />
+                </div>
+              )}
+              
+              {/* Post Content */}
+              <div className="flex-1 min-w-0">
+                {/* User Info Bar */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="font-semibold">
+                      {post.anonymous 
+                        ? 'Anonymous' 
+                        : (post.user?.username || post.user?.discordId || (post.walletAddress.slice(0, 6) + '...' + post.walletAddress.slice(-4)))
+                      }
+                    </span>
+                    {post.isOp && <Badge variant="secondary">OP</Badge>}
+                    <span className="text-sm text-muted-foreground">ID: {post.posterId}</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    <span>No.{index + 1}</span>
+                    <span className="ml-4">{new Date(post.createdAt).toLocaleString()}</span>
+                  </div>
+                </div>
+                
+                {/* Post Image */}
+                {post.imageHash && (
+                  <div className="mb-4">
+                    <img 
+                      src={post.imageHash} 
+                      alt="Post image" 
+                      className="rounded border max-h-96 max-w-full object-contain"
+                    />
+                  </div>
+                )}
+                
+                {/* Post Text */}
+                <div className="whitespace-pre-wrap break-words">
+                  {post.comment.split('\n').map((line, i) => (
+                    <p key={i} className={line.startsWith('>') ? 'text-green-600 dark:text-green-400' : ''}>
+                      {line}
+                    </p>
+                  ))}
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground">
-                <span>No.{index + 1}</span>
-                <span className="ml-4">{new Date(post.createdAt).toLocaleString()}</span>
-              </div>
-            </div>
-            <div className="whitespace-pre-wrap break-words">
-              {post.comment.split('\n').map((line, i) => (
-                <p key={i} className={line.startsWith('>') ? 'text-green-600 dark:text-green-400' : ''}>
-                  {line}
-                </p>
-              ))}
             </div>
           </Card>
         ))}
       </div>
 
-      {address && userStats?.discordId ? (
+      {address ? (
         <Card className="p-6">
           <h2 className="text-xl font-bold mb-4">Post Reply</h2>
           <div className="space-y-4">
@@ -172,16 +267,41 @@ export default function ThreadPage() {
               onChange={(e) => setComment(e.target.value)}
               rows={6}
             />
-            <Input
-              placeholder="Image URL (optional)"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-            />
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Image (optional)
+              </label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setImageFile(file);
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setImagePreview(reader.result as string);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+                className="cursor-pointer"
+              />
+              {imagePreview && (
+                <div className="mt-4">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="max-w-full max-h-64 rounded border"
+                  />
+                </div>
+              )}
+            </div>
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="anonymous-reply"
                 checked={stayAnonymous}
-                onCheckedChange={(checked) => setStayAnonymous(checked as boolean)}
+                onCheckedChange={(checked) => handleAnonymousChange(checked as boolean)}
               />
               <label
                 htmlFor="anonymous-reply"
@@ -202,10 +322,11 @@ export default function ThreadPage() {
       ) : (
         <Card className="p-12 text-center">
           <p className="text-muted-foreground">
-            {!address ? "Connect your wallet and Discord to post a reply." : "Connect Discord to post a reply."}
+            Connect your wallet to post a reply.
           </p>
         </Card>
       )}
+      </div>
     </div>
   );
 }

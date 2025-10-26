@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createHash } from "crypto";
+import { awardPostXP } from "@/lib/xp-system";
 
 // Generate unique poster ID (same wallet = same ID per board)
 function generatePosterId(walletAddress: string, boardName: string): string {
@@ -34,7 +35,55 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(thread);
+    // Enrich posts with user data
+    const postsWithUserData = await Promise.all(
+      thread.posts.map(async (post) => {
+        const user = await prisma.user.findUnique({
+          where: { address: post.walletAddress },
+          select: { createdAt: true, discordId: true, username: true }
+        });
+
+        const postCount = await prisma.post.count({
+          where: { walletAddress: post.walletAddress }
+        });
+
+        // Fetch Discord avatar if discordId exists
+        let discordAvatar = null;
+        if (user?.discordId) {
+          try {
+            const discordResponse = await fetch(`https://discord.com/api/v10/users/${user.discordId}`, {
+              headers: {
+                'Authorization': `Bot ${process.env.DISCORD_BOT_TOKEN}`
+              }
+            });
+            if (discordResponse.ok) {
+              const discordData = await discordResponse.json();
+              if (discordData.avatar) {
+                discordAvatar = `https://cdn.discordapp.com/avatars/${user.discordId}/${discordData.avatar}.png`;
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching Discord avatar:", error);
+          }
+        }
+
+        return {
+          ...post,
+          user: user ? { 
+            createdAt: user.createdAt, 
+            postCount,
+            discordId: user.discordId,
+            username: user.username,
+            discordAvatar
+          } : undefined
+        };
+      })
+    );
+
+    return NextResponse.json({
+      ...thread,
+      posts: postsWithUserData
+    });
   } catch (error) {
     console.error("Error fetching thread:", error);
     return NextResponse.json(
@@ -59,20 +108,14 @@ export async function POST(
       );
     }
 
-    // Verify user has a Discord account connected
-    const user = await prisma.user.findUnique({
-      where: { address: walletAddress }
-    });
-
-    if (!user || !user.discordId) {
-      return NextResponse.json(
-        { error: "Must connect Discord account to post" },
-        { status: 403 }
-      );
-    }
-
     const thread = await prisma.thread.findUnique({
-      where: { id: threadId }
+      where: { id: threadId },
+      include: {
+        posts: {
+          where: { isOp: true },
+          take: 1
+        }
+      }
     });
 
     if (!thread) {
@@ -83,6 +126,19 @@ export async function POST(
     }
 
     const posterId = generatePosterId(walletAddress, boardName);
+    
+    // Check if this wallet is the OP
+    const isOpPost = thread.posts.length > 0 && thread.posts[0].walletAddress === walletAddress;
+
+    // Ensure user exists
+    await prisma.user.upsert({
+      where: { address: walletAddress },
+      create: { address: walletAddress },
+      update: {}
+    });
+
+    // Check and award XP BEFORE creating the post
+    const xpResult = await awardPostXP(walletAddress);
 
     // Create post and update thread in a transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -93,7 +149,7 @@ export async function POST(
           imageHash: imageHash || null,
           walletAddress,
           posterId,
-          isOp: false,
+          isOp: isOpPost,
           anonymous: anonymous !== undefined ? anonymous : true
         }
       });
@@ -112,7 +168,10 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      postId: result.post.id
+      postId: result.post.id,
+      xpAwarded: xpResult.xpAwarded,
+      newXp: xpResult.newXp,
+      newLevel: xpResult.newLevel
     });
   } catch (error) {
     console.error("Error creating reply:", error);

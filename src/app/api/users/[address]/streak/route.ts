@@ -16,12 +16,19 @@ export async function GET(
       },
     });
 
+    // Get last post date for XP tracking
+    const lastPost = await prisma.post.findFirst({
+      where: { walletAddress: params.address },
+      orderBy: { createdAt: 'desc' }
+    });
+
     if (!user) {
       return NextResponse.json(
         {
           currentStreak: 0,
           longestStreak: 0,
           lastVoteDate: null,
+          lastPostDate: lastPost?.createdAt || null,
         },
         { status: 200 }
       );
@@ -73,6 +80,7 @@ export async function GET(
         currentStreak,
         longestStreak,
         lastVoteDate: sortedVotes[0]?.votedDate || null,
+        lastPostDate: lastPost?.createdAt || null,
       },
       { status: 200 }
     );

@@ -12,7 +12,7 @@ import {
   Lightbulb,
   Gamepad,
   DollarSign,
-  Image,
+  Image as ImageIcon,
   TrendingUp,
   HelpCircle,
 } from "lucide-react";
@@ -44,7 +44,7 @@ export const categoryDetails: Record<Category, { icon: JSX.Element }> = {
     icon: <DollarSign size={16} />,
   },
   NFT: {
-    icon: <Image size={16} />,
+    icon: <ImageIcon size={16} />,
   },
   Yield: {
     icon: <TrendingUp size={16} />,

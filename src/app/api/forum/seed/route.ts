@@ -5,7 +5,7 @@ const INITIAL_BOARDS = [
   {
     name: "gen",
     title: "General",
-    description: "General discussion about Avalanche"
+    description: "General community discussion & Avalanche topics"
   },
   {
     name: "tech",

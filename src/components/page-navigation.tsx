@@ -8,7 +8,7 @@ export function PageNavigation() {
   const pathname = usePathname();
 
   return (
-    <div className="flex items-center gap-2 mb-8">
+    <div className="flex items-center gap-2 mb-8 relative z-20">
       <div className="gap-2 flex flex-wrap">
         <Link href="/">
           <button

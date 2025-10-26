@@ -16,6 +16,7 @@ import { useUserStats } from "@/hooks/use-user-stats";
 import Link from "next/link";
 import { Address } from "viem";
 import { setWalletAddressCookie } from "@/lib/cookies";
+import { getXpProgress } from "@/lib/xp";
 
 export const ConnectButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,11 +41,13 @@ export const ConnectButton = () => {
         authenticationStatus,
         mounted,
       }) => {
+        const progress = userStats?.progress || getXpProgress(userStats?.xp || 0);
         const account = {
           ...rainbowAccount,
           level: userStats?.level || 1,
           xp: userStats?.xp || 0,
           xpForNextLevel: userStats?.xpForNextLevel || 10,
+          progress: progress,
         };
 
         // Note: If your app doesn't use authentication, you
@@ -98,7 +101,7 @@ export const ConnectButton = () => {
                         className="snow-button w-full justify-between hover:text-white"
                       >
                         <div className="flex items-center gap-2">
-                          <span>{account.displayName}</span>
+                          <span>{userStats?.discordId || account.displayName}</span>
                         </div>
                         <ChevronDown
                           className={`ml-2 h-4 w-4 transition-transform ${
@@ -117,8 +120,8 @@ export const ConnectButton = () => {
                             className="h-full bg-sky-600 transition-all duration-300"
                             style={{
                               width: `${
-                                (account.xp /
-                                  (account.xpForNextLevel + account.xp)) *
+                                ((account.progress?.currentProgress || 0) /
+                                  (account.progress?.totalNeeded || 21)) *
                                 100
                               }%`,
                             }}

@@ -1,8 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Home as HomeIcon, User, Wallet, TrendingUp, Newspaper } from "lucide-react";
-import { usePathname } from "next/navigation";
+import Image from "next/image";
+import { User, Wallet, TrendingUp, Newspaper } from "lucide-react";
 import { useAccount } from "wagmi";
 import { PageNavigation } from "@/components/page-navigation";
 import { Card } from "@/components/ui/card";
@@ -33,8 +33,11 @@ interface NewsArticle {
   image: string | null;
 }
 
+interface Board {
+  name: string;
+}
+
 export default function Home() {
-  const pathname = usePathname();
   const { address, isConnected } = useAccount();
   const { data: userStats, isLoading: isUserStatsLoading } = useUserStats(
     address as Address,
@@ -44,29 +47,30 @@ export default function Home() {
   const [recentArticles, setRecentArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchHomeData();
+  const calculateTrendingScore = useCallback((thread: Thread): number => {
+    const now = new Date().getTime();
+    const bumpedAt = new Date(thread.bumpedAt).getTime();
+    const createdAt = new Date(thread.createdAt).getTime();
+    const hoursSinceLastBump = (now - bumpedAt) / (1000 * 60 * 60);
+    const hoursSinceCreation = (now - createdAt) / (1000 * 60 * 60);
+    const engagementScore = (thread.replyCount * 10) / (hoursSinceLastBump + 2);
+    const recencyBonus = hoursSinceCreation < 24 ? 5 : 0;
+    return engagementScore + recencyBonus;
   }, []);
 
-  const fetchHomeData = async () => {
+  const fetchHomeData = useCallback(async () => {
     try {
-      // Fetch trending threads
-      const boardsResponse = await fetch("/api/forum/boards");
-      const boardsData = await boardsResponse.json();
+      // Fetch trending threads and news in parallel
+      const [threadsResponse, newsResponse] = await Promise.all([
+        fetch("/api/forum/trending"),
+        fetch("/api/news")
+      ]);
 
-      if (Array.isArray(boardsData)) {
-        const threadsPromises = boardsData.map(async (board: any) => {
-          const response = await fetch(`/api/forum/boards/${board.name}/threads`);
-          const threads = await response.json();
-          return Array.isArray(threads)
-            ? threads.map((t: any) => ({ ...t, boardName: board.name }))
-            : [];
-        });
+      const threadsData = await threadsResponse.json();
+      const newsData = await newsResponse.json();
 
-        const threadsArrays = await Promise.all(threadsPromises);
-        const allThreads = threadsArrays.flat();
-
-        const threadsWithScores = allThreads.map(thread => ({
+      if (Array.isArray(threadsData)) {
+        const threadsWithScores = threadsData.map(thread => ({
           ...thread,
           trendingScore: calculateTrendingScore(thread)
         }));
@@ -78,9 +82,6 @@ export default function Home() {
         setTrendingThreads(trending);
       }
 
-      // Fetch recent news
-      const newsResponse = await fetch("/api/news");
-      const newsData = await newsResponse.json();
       if (Array.isArray(newsData)) {
         setRecentArticles(newsData.slice(0, 6));
       }
@@ -89,18 +90,11 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [calculateTrendingScore]);
 
-  const calculateTrendingScore = (thread: Thread): number => {
-    const now = new Date().getTime();
-    const bumpedAt = new Date(thread.bumpedAt).getTime();
-    const createdAt = new Date(thread.createdAt).getTime();
-    const hoursSinceLastBump = (now - bumpedAt) / (1000 * 60 * 60);
-    const hoursSinceCreation = (now - createdAt) / (1000 * 60 * 60);
-    const engagementScore = (thread.replyCount * 10) / (hoursSinceLastBump + 2);
-    const recencyBonus = hoursSinceCreation < 24 ? 5 : 0;
-    return engagementScore + recencyBonus;
-  };
+  useEffect(() => {
+    fetchHomeData();
+  }, [fetchHomeData]);
 
   return (
     <div className="w-full">
@@ -126,14 +120,14 @@ export default function Home() {
                     <div className="flex items-center justify-between text-sm mb-1">
                       <span className="font-semibold">Level {userStats.level || 1}</span>
                       <span className="text-muted-foreground text-xs">
-                        {userStats.xp || 0} XP • {userStats.xpToNextLevel || 21} XP until next level
+                        {userStats.xp || 0} XP • {userStats.xpForNextLevel || 21} XP until next level
                       </span>
                     </div>
                     <div className="w-full bg-zinc-200 rounded-full h-2">
                       <div
                         className="bg-blue-500 h-2 rounded-full transition-all"
                         style={{
-                          width: `${((userStats.xp || 0) / (userStats.xpToNextLevel || 21)) * 100}%`
+                          width: `${((userStats.progress?.currentProgress || 0) / (userStats.progress?.totalNeeded || 21)) * 100}%`
                         }}
                       />
                     </div>
@@ -176,13 +170,14 @@ export default function Home() {
               ) : recentArticles.length > 0 ? (
                 recentArticles.slice(0, 6).map((article, idx) => (
                   <Link key={idx} href={article.link} target="_blank">
-                    <Card className="overflow-hidden hover:border-primary transition-colors cursor-pointer h-full">
+                    <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
                       {article.image && (
-                        <div className="w-full h-32 overflow-hidden">
-                          <img
+                        <div className="w-full h-32 overflow-hidden relative">
+                          <Image
                             src={article.image}
                             alt={article.title}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                           />
                         </div>
                       )}
@@ -229,28 +224,41 @@ export default function Home() {
               ) : trendingThreads.length > 0 ? (
                 trendingThreads.map((thread) => (
                   <Link key={thread.id} href={`/forum/thread/${thread.id}`}>
-                    <Card className="p-4 hover:border-primary transition-colors cursor-pointer h-full">
-                      <div className="flex flex-col gap-2">
-                        <div className="flex justify-between items-start gap-2">
-                          {thread.subject && (
-                            <h3 className="font-semibold text-sm truncate flex-1">
-                              {thread.subject}
-                            </h3>
-                          )}
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {formatDistanceToNow(new Date(thread.bumpedAt), { addSuffix: true })}
-                          </span>
-                        </div>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {thread.posts[0]?.comment || "No content"}
-                        </p>
-                        <div className="flex gap-2 items-center">
-                          <Badge variant="outline" className="text-xs">
-                            /{thread.boardName}/
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {thread.replyCount} replies
-                          </span>
+                    <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
+                      <div className="flex gap-3 p-3">
+                        {thread.posts[0]?.imageHash && (
+                          <div className="w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 p-2">
+                            <img 
+                              src={thread.posts[0].imageHash} 
+                              alt={thread.subject || 'Thread image'} 
+                              className="w-full h-full object-cover rounded"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col gap-2">
+                            <div className="flex justify-between items-start gap-2">
+                              {thread.subject && (
+                                <h3 className="font-semibold text-sm truncate flex-1">
+                                  {thread.subject}
+                                </h3>
+                              )}
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                {formatDistanceToNow(new Date(thread.bumpedAt), { addSuffix: true })}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground line-clamp-2">
+                              {thread.posts[0]?.comment || "No content"}
+                            </p>
+                            <div className="flex gap-2 items-center">
+                              <Badge variant="outline" className="text-xs">
+                                /{thread.boardName}/
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {thread.replyCount} replies
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </Card>

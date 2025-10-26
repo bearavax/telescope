@@ -2,7 +2,7 @@
 
 import { useAccount, usePrepareTransactionRequest, useReadContract, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { ConnectButton } from "@/components/connect-button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { MintCounter } from "@/components/mint-counter";
 import { useUserStats } from "@/hooks/use-user-stats";
 import { Address, encodeFunctionData, parseEther } from "viem";
@@ -14,6 +14,7 @@ import { Loader } from "@/components/icons/loader";
 import { useToast } from "@/hooks/use-toast";
 import { avalanche } from "wagmi/chains";
 import { MintCountDown } from "@/components/mint-count-down";
+import Image from "next/image";
 
 
 export function MintWindow() {
@@ -41,14 +42,14 @@ export function MintWindow() {
         isConnected
     );
 
-    const puppetPrices: { [round: number]: number } = {
+    const puppetPrices: { [round: number]: number } = useMemo(() => ({
         0: 0,
         1: 1,
         2: 1.25,
         3: 1.5,
         4: 1.75,
         5: 2
-    };
+    }), []);
 
     const { data: isMintingData, refetch: fetchIsMinting } = useReadContract({
         abi: puppets_nft_abi,
@@ -252,10 +253,12 @@ export function MintWindow() {
         ? (
             <div className="w-full flex flex-col md:flex-row gap-1 px-6 md:pl-12 md:pr-8 items-center">
                 <div className="flex flex-col gap-2 items-center">
-                    <img
-                        className="w-[300px] border-zinc-300 border-2"
+                    <Image
+                        className="border-zinc-300 border-2"
                         src="puppets/images/unrevealed.gif"
                         alt="unrevealed puppet"
+                        width={300}
+                        height={300}
                     />
                     <span className="font-semibold text-zinc-500">{`${numMinted} minted`}</span>
                 </div>
@@ -289,10 +292,12 @@ export function MintWindow() {
             </div>
         ) : (
             <div className="w-full flex flex-col md:flex-row gap-1 pl-12 pr-8 items-center">
-                <img
-                    className="w-[300px] h-[300px] object-contain object-center mx-auto"
+                <Image
+                    className="object-contain object-center mx-auto"
                     src={`stickers/sticker${stickerNum}.png`}
                     alt="cute student puppet"
+                    width={300}
+                    height={300}
                 />
                 <div className="mt-2 md:mt-0 flex-1 text-center flex flex-col gap-1 items-center">
                     <div className="flex flex-col gap-1 items-center mb-6">

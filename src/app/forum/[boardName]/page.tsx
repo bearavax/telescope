@@ -13,6 +13,8 @@ import { useAccount } from "wagmi";
 import { formatDistanceToNow } from "date-fns";
 import { useUserStats } from "@/hooks/use-user-stats";
 import { Address } from "viem";
+import { PageNavigation } from "@/components/page-navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Thread {
   id: string;
@@ -29,11 +31,14 @@ interface Post {
   posterId: string;
   createdAt: string;
   walletAddress: string;
+  imageHash: string | null;
+  anonymous: boolean;
 }
 
 export default function BoardPage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { address, isConnected } = useAccount();
   const boardName = params.boardName as string;
   const { data: userStats } = useUserStats(address as Address, isConnected);
@@ -45,7 +50,20 @@ export default function BoardPage() {
   const [subject, setSubject] = useState("");
   const [comment, setComment] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [stayAnonymous, setStayAnonymous] = useState(true);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [stayAnonymous, setStayAnonymous] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('stayAnonymous');
+      return saved !== null ? JSON.parse(saved) : false;
+    }
+    return false;
+  });
+
+  const handleAnonymousChange = (checked: boolean) => {
+    setStayAnonymous(checked);
+    localStorage.setItem('stayAnonymous', JSON.stringify(checked));
+  };
 
   useEffect(() => {
     fetchThreads();
@@ -64,10 +82,25 @@ export default function BoardPage() {
   };
 
   const createThread = async () => {
-    if (!address || !comment.trim() || !userStats?.discordId) return;
+    if (!address || !comment.trim() || !imageFile) return;
 
     setCreating(true);
     try {
+      // Upload image first
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const uploadData = await uploadResponse.json();
+      
+      if (!uploadData.url) {
+        throw new Error('Image upload failed');
+      }
+
       const response = await fetch(`/api/forum/boards/${boardName}/threads`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -75,7 +108,7 @@ export default function BoardPage() {
           subject: subject.trim() || null,
           comment,
           walletAddress: address,
-          imageHash: imageUrl.trim() || null,
+          imageHash: uploadData.url,
           anonymous: stayAnonymous
         })
       });
@@ -83,10 +116,16 @@ export default function BoardPage() {
       const data = await response.json();
 
       if (data.success) {
+        if (data.xpAwarded) {
+          // Invalidate user stats to refresh XP display
+          queryClient.invalidateQueries({ queryKey: ["userStats", address] });
+          alert(`Thread created! You earned 1 XP. Total XP: ${data.newXp} (Level ${data.newLevel})`);
+        }
         router.push(`/forum/thread/${data.threadId}`);
       }
     } catch (error) {
       console.error("Error creating thread:", error);
+      alert('Failed to create thread. Please try again.');
     } finally {
       setCreating(false);
     }
@@ -106,22 +145,30 @@ export default function BoardPage() {
   }
 
   return (
-    <div className="w-full max-w-screen-lg mx-auto px-8 py-16">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <Link href="/forum" className="text-primary hover:underline mb-2 inline-block">
-            ← Back to boards
-          </Link>
-          <h1 className="text-4xl font-bold">/{boardName}/</h1>
+    <div className="w-full">
+      <div className="w-full max-w-screen-lg mx-auto -mt-6 px-8 relative z-10 mb-4">
+        <PageNavigation />
+      </div>
+      <div className="w-full max-w-screen-lg mx-auto px-8 pb-16">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+          <Link href="/" className="hover:text-primary">Home</Link>
+          <span>›</span>
+          <Link href="/forum" className="hover:text-primary">Forum</Link>
+          <span>›</span>
+          <span className="text-foreground font-medium">/{boardName}/</span>
         </div>
-        {address && userStats?.discordId && (
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold" style={{ color: '#3c688f' }}>/{boardName}/</h1>
+          </div>
+        {isConnected && (
           <Button onClick={() => setShowNewThread(!showNewThread)}>
             {showNewThread ? "Cancel" : "New Thread"}
           </Button>
         )}
-        {address && !userStats?.discordId && (
+        {!isConnected && (
           <p className="text-sm text-muted-foreground">
-            Connect Discord to post
+            Connect wallet to post
           </p>
         )}
       </div>
@@ -142,16 +189,41 @@ export default function BoardPage() {
               onChange={(e) => setComment(e.target.value)}
               rows={6}
             />
-            <Input
-              placeholder="Image URL (optional)"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-            />
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Image (required) *
+              </label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setImageFile(file);
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setImagePreview(reader.result as string);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+                className="cursor-pointer"
+              />
+              {imagePreview && (
+                <div className="mt-4">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="max-w-full max-h-64 rounded border"
+                  />
+                </div>
+              )}
+            </div>
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="anonymous"
                 checked={stayAnonymous}
-                onCheckedChange={(checked) => setStayAnonymous(checked as boolean)}
+                onCheckedChange={(checked) => handleAnonymousChange(checked as boolean)}
               />
               <label
                 htmlFor="anonymous"
@@ -162,7 +234,7 @@ export default function BoardPage() {
             </div>
             <Button
               onClick={createThread}
-              disabled={creating || !comment.trim() || !userStats?.discordId}
+              disabled={creating || !comment.trim() || !imageFile}
               className="w-full"
             >
               {creating ? "Creating..." : "Create Thread"}
@@ -171,30 +243,34 @@ export default function BoardPage() {
         </Card>
       )}
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {threads.map((thread) => (
           <Link key={thread.id} href={`/forum/thread/${thread.id}`}>
-            <Card className="p-6 hover:border-primary transition-colors cursor-pointer">
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex-1">
-                  {thread.subject && (
-                    <h3 className="text-lg font-semibold mb-1">{thread.subject}</h3>
-                  )}
-                  <p className="text-sm text-muted-foreground line-clamp-2">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+              <div className="p-3">
+                {/* Thread Image */}
+                {thread.posts[0]?.imageHash && (
+                  <div className="w-full aspect-square overflow-hidden rounded bg-zinc-100 dark:bg-zinc-800 mb-2">
+                    <img 
+                      src={thread.posts[0].imageHash} 
+                      alt={thread.subject || 'Thread image'} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                
+                {/* Thread Info */}
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-xs line-clamp-2 min-h-[2rem]">
+                    {thread.subject || 'No Subject'}
+                  </h3>
+                  <p className="text-xs text-muted-foreground line-clamp-2">
                     {thread.posts[0]?.comment}
                   </p>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+                    <span className="truncate">{thread.replyCount} replies</span>
+                  </div>
                 </div>
-                <div className="ml-4 flex flex-col items-end gap-2">
-                  <Badge variant="secondary">{thread.replyCount} replies</Badge>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(thread.bumpedAt), { addSuffix: true })}
-                  </span>
-                </div>
-              </div>
-              <div className="flex gap-2 text-xs text-muted-foreground mt-2">
-                <span>ID: {thread.posts[0]?.posterId}</span>
-                <span>•</span>
-                <span>{new Date(thread.createdAt).toLocaleString()}</span>
               </div>
             </Card>
           </Link>
@@ -206,16 +282,12 @@ export default function BoardPage() {
           <p className="text-muted-foreground mb-4">No threads yet. Be the first to post!</p>
           {!address && (
             <p className="text-sm text-muted-foreground">
-              Connect your wallet and Discord to create a thread.
-            </p>
-          )}
-          {address && !userStats?.discordId && (
-            <p className="text-sm text-muted-foreground">
-              Connect Discord to create a thread.
+              Connect your wallet to create a thread.
             </p>
           )}
         </Card>
       )}
+      </div>
     </div>
   );
 }

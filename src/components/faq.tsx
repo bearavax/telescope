@@ -15,7 +15,7 @@ const faqItems = [
   },
   {
     question: "What do I do?",
-    answer: "Currently, you can vote once a day for 1 XP.",
+    answer: "Currently, you can interact once a day for 1 XP by posting on the forum.",
   },
   {
     question: "What is XP for?",

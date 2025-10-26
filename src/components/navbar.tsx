@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Newspaper, Menu, Home } from "lucide-react";
 
 import { FAQ } from "@/components/faq";
@@ -19,10 +20,13 @@ export function Navbar() {
         <div className="flex items-center gap-4 absolute left-8 z-10">
           <BackButton />
         </div>
-        <img
+        <Image
           src="/logo.png"
           alt="Telescope"
-          className="w-56 md:w-80 flex items-end absolute md:relative left-0 bottom-0"
+          className="flex items-end absolute md:relative left-0 bottom-0 w-56 md:w-80"
+          width={320}
+          height={80}
+          style={{ width: 'auto', height: 'auto' }}
         />
         <div className="flex items-center relative z-10 justify-center gap-4 md:self-auto">
           <div className="hidden md:flex items-center gap-2">

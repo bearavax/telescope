@@ -9,13 +9,31 @@ export function getXpForNextLevel(currentXp: number): number {
   const currentLevel = calculateLevel(currentXp);
 
   if (currentLevel === 1) {
-    return 11 - currentXp; // XP needed to reach level 2
+    return 11; // Total XP needed for level 2 (11 XP total)
   }
 
-  const xpNeededForCurrentLevel = (currentLevel - 2) * 30 + 11;
-  console.log("xpNeededForCurrentLevel", xpNeededForCurrentLevel);
-  const xpNeededForNextLevel = (currentLevel - 1) * 30 + 11;
-  console.log("xpNeededForNextLevel", xpNeededForNextLevel);
+  // Calculate XP needed to reach next level
+  const xpForCurrentLevel = (currentLevel - 2) * 30 + 11; // XP at start of current level
+  const xpForNextLevel = (currentLevel - 1) * 30 + 11; // XP needed for next level
+  
+  return xpForNextLevel - currentXp;
+}
 
-  return xpNeededForNextLevel - currentXp;
+export function getXpProgress(currentXp: number): { currentProgress: number; totalNeeded: number } {
+  const currentLevel = calculateLevel(currentXp);
+  
+  if (currentLevel === 1) {
+    return {
+      currentProgress: currentXp,
+      totalNeeded: 11
+    };
+  }
+  
+  const xpForCurrentLevel = (currentLevel - 2) * 30 + 11;
+  const xpForNextLevel = (currentLevel - 1) * 30 + 11;
+  
+  return {
+    currentProgress: currentXp - xpForCurrentLevel,
+    totalNeeded: xpForNextLevel - xpForCurrentLevel
+  };
 }

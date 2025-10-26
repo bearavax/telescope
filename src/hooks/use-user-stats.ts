@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { calculateLevel, getXpForNextLevel } from "@/lib/xp";
+import { calculateLevel, getXpForNextLevel, getXpProgress } from "@/lib/xp";
 import { Address } from "viem";
 
 interface UserStats {
@@ -7,6 +7,7 @@ interface UserStats {
   level: number;
   xpForNextLevel: number;
   discordId: string;
+  progress: { currentProgress: number; totalNeeded: number };
 }
 
 export function useUserStats(address: Address, isConnected: boolean) {
@@ -27,6 +28,7 @@ export function useUserStats(address: Address, isConnected: boolean) {
         xp,
         level: calculateLevel(xp),
         xpForNextLevel: getXpForNextLevel(xp),
+        progress: getXpProgress(xp),
         discordId,
       };
     },
