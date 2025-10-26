@@ -13,7 +13,6 @@ export function getXpForNextLevel(currentXp: number): number {
   }
 
   // Calculate XP needed to reach next level
-  const xpForCurrentLevel = (currentLevel - 2) * 30 + 11; // XP at start of current level
   const xpForNextLevel = (currentLevel - 1) * 30 + 11; // XP needed for next level
   
   return xpForNextLevel - currentXp;

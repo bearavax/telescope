@@ -1,13 +1,5 @@
 import { prisma } from "@/lib/prisma";
 
-// XP required to reach a specific level (matching xp.ts calculation)
-function getXpForLevel(level: number): number {
-  if (level === 1) return 0;
-  if (level === 2) return 11;
-  // Level 3+ requires 11 + (level-2)*30
-  return 11 + (level - 2) * 30;
-}
-
 // Award XP for interacting (1 XP per day via posting)
 export async function awardPostXP(walletAddress: string): Promise<{ xpAwarded: boolean; newXp: number; newLevel: number }> {
   try {

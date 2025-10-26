@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, TrendingUp, Users, Clock, CheckCircle, XCircle, Lock } from "lucide-react";
+import { MessageSquare, TrendingUp, Users, Clock, CheckCircle, Lock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useAccount } from "wagmi";
-import { Address } from "viem";
 import { useActivityTracker } from "@/hooks/use-activity-tracker";
 
 interface Board {

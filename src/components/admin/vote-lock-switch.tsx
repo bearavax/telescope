@@ -16,6 +16,7 @@ export function VoteLockSwitch() {
     if (address) {
       fetchVoteLockStatus();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
 
   const fetchVoteLockStatus = async () => {
