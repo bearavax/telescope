@@ -5,6 +5,12 @@ export const dynamic = 'force-dynamic';
 
 const SUBSTACKS = [
   {
+    name: "Smitty",
+    url: "https://www.avalore.xyz/feed",
+    baseUrl: "https://www.avalore.xyz/",
+    slug: "smitty",
+  },
+  {
     name: "The Cook",
     url: "https://cookoutclub.substack.com/feed",
     baseUrl: "https://cookoutclub.substack.com/",

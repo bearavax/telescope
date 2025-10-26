@@ -137,3 +137,36 @@ model CoffeeDonation {
   transactionHash String?
   createdAt       DateTime @default(now())
 }
+
+model Board {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   @unique // e.g., "gen", "meme", "defi"
+  title       String   // e.g., "General AVAX"
+  description String
+  createdAt   DateTime @default(now())
+  threads     Thread[]
+}
+
+model Thread {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  boardId     String   @db.ObjectId
+  board       Board    @relation(fields: [boardId], references: [id])
+  subject     String?  // Optional thread title
+  bumpedAt    DateTime @default(now())
+  createdAt   DateTime @default(now())
+  replyCount  Int      @default(0)
+  posts       Post[]
+}
+
+model Post {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  threadId      String   @db.ObjectId
+  thread        Thread   @relation(fields: [threadId], references: [id])
+  comment       String
+  imageHash     String?  // Optional IPFS hash or image URL
+  walletAddress String
+  posterId      String   // Unique ID per wallet per board
+  isOp          Boolean  @default(false)
+  anonymous     Boolean  @default(true) // Whether to hide wallet/discord info
+  createdAt     DateTime @default(now())
+}

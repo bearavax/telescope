@@ -1,344 +1,269 @@
 "use client";
-import React, { useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { LeaderboardTable } from "@/components/leaderboard-table";
-import { LeaderboardItem } from "@/types";
-import { Users } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { Home as HomeIcon, User, Wallet, TrendingUp, Newspaper } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useAccount } from "wagmi";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Countdown } from "@/components/countdown";
-import { getTextColorClass } from "@/lib/utils";
-import { Categories } from "@/components/categories";
+import { PageNavigation } from "@/components/page-navigation";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useUserStats } from "@/hooks/use-user-stats";
-import { ConnectDiscordAlert } from "@/components/connect-discord-alert";
 import { Address } from "viem";
-import { useSession } from "next-auth/react";
-import { BearUniversityAlert } from "@/components/bear-university-alert";
-//import { MintWindow } from "@/components/mint-window";
+import { formatDistanceToNow } from "date-fns";
 
+interface Thread {
+  id: string;
+  subject: string | null;
+  bumpedAt: string;
+  createdAt: string;
+  replyCount: number;
+  boardName: string;
+  posts: Array<{
+    id: string;
+    comment: string;
+  }>;
+}
+
+interface NewsArticle {
+  title: string;
+  link: string;
+  pubDate: string;
+  creator: string;
+  source: string;
+  image: string | null;
+}
 
 export default function Home() {
-  const searchParams = useSearchParams();
-  const selectedTag = searchParams.get("tag") || undefined;
-
+  const pathname = usePathname();
   const { address, isConnected } = useAccount();
   const { data: userStats, isLoading: isUserStatsLoading } = useUserStats(
     address as Address,
     isConnected
   );
-  const { status: sessionStatus } = useSession();
+  const [trendingThreads, setTrendingThreads] = useState<Thread[]>([]);
+  const [recentArticles, setRecentArticles] = useState<NewsArticle[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<
-    "projects" | "season1" | "artists" | "mint"
-  >("projects");
+  useEffect(() => {
+    fetchHomeData();
+  }, []);
 
-  const {
-    data: projects,
-    isLoading,
-    isError,
-  } = useQuery<LeaderboardItem[], Error>({
-    queryKey: ["projects", selectedTag],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/projects${selectedTag ? `?tag=${selectedTag}` : ""}`,
-        {
-          headers: {
-            "Cache-Control": "no-cache",
-            Pragma: "no-cache",
-          },
-        }
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch projects.");
+  const fetchHomeData = async () => {
+    try {
+      // Fetch trending threads
+      const boardsResponse = await fetch("/api/forum/boards");
+      const boardsData = await boardsResponse.json();
+
+      if (Array.isArray(boardsData)) {
+        const threadsPromises = boardsData.map(async (board: any) => {
+          const response = await fetch(`/api/forum/boards/${board.name}/threads`);
+          const threads = await response.json();
+          return Array.isArray(threads)
+            ? threads.map((t: any) => ({ ...t, boardName: board.name }))
+            : [];
+        });
+
+        const threadsArrays = await Promise.all(threadsPromises);
+        const allThreads = threadsArrays.flat();
+
+        const threadsWithScores = allThreads.map(thread => ({
+          ...thread,
+          trendingScore: calculateTrendingScore(thread)
+        }));
+
+        const trending = threadsWithScores
+          .sort((a, b) => b.trendingScore - a.trendingScore)
+          .slice(0, 6);
+
+        setTrendingThreads(trending);
       }
-      return response.json();
-    },
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    refetchInterval: 5000,
-  });
 
-  const {
-    data: season1Projects,
-    isLoading: isLoadingSeason1,
-    isError: isErrorSeason1,
-  } = useQuery<LeaderboardItem[], Error>({
-    queryKey: ["season1-projects", selectedTag],
-    queryFn: async () => {
-      console.log("Fetching Season 1 projects...");
-      const response = await fetch(
-        `/api/projects/season1${selectedTag ? `?tag=${selectedTag}` : ""}`,
-        {
-          headers: {
-            "Cache-Control": "no-cache",
-            Pragma: "no-cache",
-          },
-        }
-      );
-      if (!response.ok) {
-        console.error("Failed to fetch Season 1 projects:", response.status);
-        throw new Error("Failed to fetch season 1 projects.");
+      // Fetch recent news
+      const newsResponse = await fetch("/api/news");
+      const newsData = await newsResponse.json();
+      if (Array.isArray(newsData)) {
+        setRecentArticles(newsData.slice(0, 6));
       }
-      const data = await response.json();
-      console.log("Received Season 1 projects:", data.length);
-      return data;
-    },
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    refetchInterval: 5000,
-  });
+    } catch (error) {
+      console.error("Error fetching home data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-
+  const calculateTrendingScore = (thread: Thread): number => {
+    const now = new Date().getTime();
+    const bumpedAt = new Date(thread.bumpedAt).getTime();
+    const createdAt = new Date(thread.createdAt).getTime();
+    const hoursSinceLastBump = (now - bumpedAt) / (1000 * 60 * 60);
+    const hoursSinceCreation = (now - createdAt) / (1000 * 60 * 60);
+    const engagementScore = (thread.replyCount * 10) / (hoursSinceLastBump + 2);
+    const recencyBonus = hoursSinceCreation < 24 ? 5 : 0;
+    return engagementScore + recencyBonus;
+  };
 
   return (
     <div className="w-full">
       <div className="w-full max-w-screen-lg mx-auto -mt-6 px-8 relative z-10 mb-16">
-        <Tabs
-          defaultValue="projects"
-          className="flex flex-col gap-4"
-          onValueChange={(value) => {
-            // @ts-expect-error value should be within the type of tab defined above
-            setActiveTab(value);
-          }}
-        >
-          <div className="flex items-start md:items-center justify-between flex-col md:flex-row gap-4">
-            <div className="flex items-center gap-2">
-              <TabsList className="gap-2 bg-transparent m-0 p-0">
-                <TabsTrigger
-                  value="projects"
-                  className="px-4 py-2 font-bold text-md bg-white border-white border-2"
-                  onClick={() => {
-                    setActiveTab("projects");
-                  }}
-                >
-                  Projects
-                </TabsTrigger>
-                <TabsTrigger
-                  value="artists"
-                  className="px-4 py-2 font-bold text-md bg-white border-white border-2"
-                  onClick={() => {
-                    setActiveTab("artists");
-                  }}
-                >
-                  Artists
-                </TabsTrigger>
-              </TabsList>
-            </div>
-          </div>
-          {activeTab === "projects" &&
-            (isConnected && !isUserStatsLoading && !userStats?.discordId ? (
-              <ConnectDiscordAlert />
-            ) : sessionStatus !== "loading" ? (
-              <Countdown />
-            ) : null)}
-          {activeTab === "mint" && <BearUniversityAlert />}
-          <TabsContent
-            value="projects"
-            className="tab-content gap-4 flex flex-col"
-          >
-            <Tabs defaultValue="current" className="w-full">
-              <TabsList className="bg-transparent flex gap-2 justify-start">
-                <TabsTrigger
-                  value="current"
-                  className="px-4 py-2 font-bold text-sm bg-white border-white border-2"
-                >
-                  Season 2
-                </TabsTrigger>
-                <TabsTrigger
-                  value="season1"
-                  className="px-4 py-2 font-bold text-sm bg-white border-white border-2"
-                >
-                  Season 1
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="current" className="mt-4">
-                <div className="flex gap-1 flex-col mb-4">
-                  <h3 className="font-bold">Categories</h3>
-                  <Categories />
-                </div>
-                <LeaderboardTable
-                  items={(projects || [])
-                    .sort((a, b) => {
-                      const aVotes = (a.metadata?.likes || 0) + (a.metadata?.dislikes || 0);
-                      const bVotes = (b.metadata?.likes || 0) + (b.metadata?.dislikes || 0);
-                      return bVotes - aVotes;
-                    })
-                    .map((item, idx) => ({ ...item, rank: idx + 1 }))}
-                  renderMetadata={(item) => {
-                    if (!item.metadata) return null;
+        <PageNavigation />
 
-                    return (
-                      <div className="flex flex-col items-end mr-4">
-                        <div className="text-base font-medium text-zinc-700 dark:text-zinc-200">
-                          {item.metadata.likes + item.metadata.dislikes} votes
+        <div className="space-y-6">
+          {/* User Profile / Connect Wallet */}
+          <Card className="p-6">
+            {isConnected ? (
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <User className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">Connected Wallet</p>
+                  <p className="font-mono text-sm font-semibold">
+                    {address?.slice(0, 6)}...{address?.slice(-4)}
+                  </p>
+                </div>
+                {!isUserStatsLoading && userStats && (
+                  <div className="min-w-[300px]">
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="font-semibold">Level {userStats.level || 1}</span>
+                      <span className="text-muted-foreground text-xs">
+                        {userStats.xp || 0} XP • {userStats.xpToNextLevel || 21} XP until next level
+                      </span>
+                    </div>
+                    <div className="w-full bg-zinc-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-500 h-2 rounded-full transition-all"
+                        style={{
+                          width: `${((userStats.xp || 0) / (userStats.xpToNextLevel || 21)) * 100}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-zinc-100 rounded-lg">
+                  <Wallet className="h-6 w-6 text-zinc-600" />
+                </div>
+                <div>
+                  <p className="font-semibold">Connect Your Wallet</p>
+                  <p className="text-sm text-muted-foreground">
+                    Connect your wallet to vote on projects and participate in the community
+                  </p>
+                </div>
+              </div>
+            )}
+          </Card>
+
+          {/* Recent News */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Newspaper className="h-5 w-5" />
+                Recent Articles
+              </h2>
+              <Link href="/news" className="text-sm text-primary hover:underline">
+                View all
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {loading ? (
+                <>
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div key={i} className="h-48 bg-zinc-100 animate-pulse rounded-lg" />
+                  ))}
+                </>
+              ) : recentArticles.length > 0 ? (
+                recentArticles.slice(0, 6).map((article, idx) => (
+                  <Link key={idx} href={article.link} target="_blank">
+                    <Card className="overflow-hidden hover:border-primary transition-colors cursor-pointer h-full">
+                      {article.image && (
+                        <div className="w-full h-32 overflow-hidden">
+                          <img
+                            src={article.image}
+                            alt={article.title}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-                        <div
-                          className={`flex items-center gap-1 text-xs ${getTextColorClass(
-                            item.rank
-                          )}`}
-                        >
-                          <Users className="h-3 w-3" />
-                          <span>
-                            {item.metadata.voters.toLocaleString()} voters
+                      )}
+                      <div className="p-4 flex flex-col gap-2">
+                        <h3 className="font-semibold text-sm line-clamp-2">{article.title}</h3>
+                        <div className="flex gap-2 items-center">
+                          <Badge variant="outline" className="text-xs">
+                            {article.source}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
                           </span>
                         </div>
                       </div>
-                    );
-                  }}
-                  isLoading={isLoading}
-                  isError={isError}
-                />
-              </TabsContent>
-              <TabsContent value="season1" className="mt-4">
-                <div className="flex gap-1 flex-col mb-4">
-                  <h3 className="font-bold">Categories</h3>
-                  <Categories />
-                </div>
-                {isLoadingSeason1 ? (
-                  <div>Loading Season 1 projects...</div>
-                ) : isErrorSeason1 ? (
-                  <div>Error loading Season 1 projects</div>
-                ) : season1Projects?.length === 0 ? (
-                  <div>No Season 1 projects found</div>
-                ) : (
-                  <LeaderboardTable
-                    items={(season1Projects || [])
-                      .sort((a, b) => {
-                        const aVotes = (a.metadata?.likes || 0) + (a.metadata?.dislikes || 0);
-                        const bVotes = (b.metadata?.likes || 0) + (b.metadata?.dislikes || 0);
-                        return bVotes - aVotes;
-                      })
-                      .map((item, idx) => ({ ...item, rank: idx + 1 }))}
-                    renderMetadata={(item) => {
-                      if (!item.metadata) return null;
+                    </Card>
+                  </Link>
+                ))
+              ) : (
+                <Card className="p-8 text-center col-span-3">
+                  <p className="text-muted-foreground text-sm">No articles yet</p>
+                </Card>
+              )}
+            </div>
+          </div>
 
-                      return (
-                        <div className="flex flex-col items-end mr-4">
-                          <div className="text-base font-medium text-zinc-700 dark:text-zinc-200">
-                            {item.metadata.likes + item.metadata.dislikes} votes
-                          </div>
-                          <div
-                            className={`flex items-center gap-1 text-xs ${getTextColorClass(
-                              item.rank
-                            )}`}
-                          >
-                            <Users className="h-3 w-3" />
-                            <span>
-                              {item.metadata.voters.toLocaleString()} voters
-                            </span>
-                          </div>
+          {/* Trending Threads */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Trending Threads
+              </h2>
+              <Link href="/forum" className="text-sm text-primary hover:underline">
+                View all
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {loading ? (
+                <>
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div key={i} className="h-24 bg-zinc-100 animate-pulse rounded-lg" />
+                  ))}
+                </>
+              ) : trendingThreads.length > 0 ? (
+                trendingThreads.map((thread) => (
+                  <Link key={thread.id} href={`/forum/thread/${thread.id}`}>
+                    <Card className="p-4 hover:border-primary transition-colors cursor-pointer h-full">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex justify-between items-start gap-2">
+                          {thread.subject && (
+                            <h3 className="font-semibold text-sm truncate flex-1">
+                              {thread.subject}
+                            </h3>
+                          )}
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {formatDistanceToNow(new Date(thread.bumpedAt), { addSuffix: true })}
+                          </span>
                         </div>
-                      );
-                    }}
-                    isLoading={isLoadingSeason1}
-                    isError={isErrorSeason1}
-                  />
-                )}
-              </TabsContent>
-            </Tabs>
-          </TabsContent>
-          <TabsContent value="artists" className="tab-content">
-            <div className="w-full bg-white rounded-lg shadow">
-              <div className="px-8 py-6 space-y-6">
-                {/* Header & Prompt Combined */}
-                <div>
-                  <h2 className="text-2xl font-bold">Team1 Art Club - Cohort 1</h2>
-                  <p className="text-zinc-600 mt-1 mb-4">Submit artwork based on the prompt below</p>
-                  <div className="bg-zinc-50 rounded-lg p-4 border border-zinc-200">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm text-zinc-600">Current Prompt:</span>
-                      <span className="text-lg font-bold text-zinc-800">&quot;Wolfi&quot;</span>
-                    </div>
-                    <p className="text-zinc-600 text-sm">
-                      Create original artwork featuring the Avalanche mascot, suitable for NFT minting
-                    </p>
-                  </div>
-                </div>
-
-                {/* Process & Benefits Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* How It Works */}
-                  <div>
-                    <h3 className="font-bold mb-3">How It Works</h3>
-                    <div className="space-y-2">
-                      <div className="flex gap-3">
-                        <span className="font-semibold text-zinc-700">1.</span>
-                        <div className="text-sm text-zinc-600">Submit your Wolfi artwork</div>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {thread.posts[0]?.comment || "No content"}
+                        </p>
+                        <div className="flex gap-2 items-center">
+                          <Badge variant="outline" className="text-xs">
+                            /{thread.boardName}/
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {thread.replyCount} replies
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex gap-3">
-                        <span className="font-semibold text-zinc-700">2.</span>
-                        <div className="text-sm text-zinc-600">Community votes (10 votes each)</div>
-                      </div>
-                      <div className="flex gap-3">
-                        <span className="font-semibold text-zinc-700">3.</span>
-                        <div className="text-sm text-zinc-600">Top 10% join the Art Club</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Benefits */}
-                  <div>
-                    <h3 className="font-bold mb-3">Club Benefits</h3>
-                    <div className="space-y-2">
-                      <div className="flex gap-3">
-                        <span className="text-zinc-400">•</span>
-                        <div className="text-sm text-zinc-600">Monthly AMAs with mentors</div>
-                      </div>
-                      <div className="flex gap-3">
-                        <span className="text-zinc-400">•</span>
-                        <div className="text-sm text-zinc-600">Skill development workshops</div>
-                      </div>
-                      <div className="flex gap-3">
-                        <span className="text-zinc-400">•</span>
-                        <div className="text-sm text-zinc-600">Exclusive Discord channels</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Mentors & Partners - Compact */}
-                <div className="border-t border-zinc-200 pt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="font-semibold text-zinc-700">Mentors:</span>
-                      <span className="text-zinc-600 ml-2">Wrath, Ly, Scribble, TimDraws & more</span>
-                    </div>
-                    <div>
-                      <span className="font-semibold text-zinc-700">Partners:</span>
-                      <span className="text-zinc-600 ml-2">zeroone, Cozy, Salvor & Avax projects</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                  <button className="snow-button flex-1" disabled>
-                    Submissions Opening Soon
-                  </button>
-                  <a
-                    href="https://discord.gg/K4z7xxFVGc"
-                    target="_blank"
-                    className="snow-button-secondary flex-1 text-center"
-                  >
-                    Join Discord for Updates
-                  </a>
-                </div>
-              </div>
+                    </Card>
+                  </Link>
+                ))
+              ) : (
+                <Card className="p-8 text-center col-span-3">
+                  <p className="text-muted-foreground text-sm">No threads yet</p>
+                </Card>
+              )}
             </div>
-          </TabsContent>
-          {/* <TabsContent value="mint" className="tab-content">
-            <div className="w-full bg-white rounded-lg py-16 shadow flex items-center justify-center flex-col gap-4">
-              <MintWindow />
-            </div>
-          </TabsContent> */}
-        </Tabs>
+          </div>
+        </div>
       </div>
     </div>
   );

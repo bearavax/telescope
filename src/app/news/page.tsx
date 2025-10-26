@@ -8,6 +8,11 @@ import { AuthorTags } from "@/components/author-tags";
 
 const SUBSTACKS = [
   {
+    name: "Smitty",
+    url: "https://www.avalore.xyz/",
+    slug: "smitty",
+  },
+  {
     name: "The Cook",
     url: "https://cookoutclub.substack.com/",
     slug: "the-cook",
