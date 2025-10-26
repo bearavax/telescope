@@ -52,9 +52,8 @@ interface Thread {
 export default function ThreadPage() {
   const params = useParams();
   const queryClient = useQueryClient();
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const threadId = params.threadId as string;
-  const { data: userStats } = useUserStats(address as Address, isConnected);
 
   const [thread, setThread] = useState<Thread | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,6 +77,7 @@ export default function ThreadPage() {
 
   useEffect(() => {
     fetchThread();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [threadId]);
 
   const fetchThread = async () => {

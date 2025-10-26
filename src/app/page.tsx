@@ -33,10 +33,6 @@ interface NewsArticle {
   image: string | null;
 }
 
-interface Board {
-  name: string;
-}
-
 export default function Home() {
   const { address, isConnected } = useAccount();
   const { data: userStats, isLoading: isUserStatsLoading } = useUserStats(
