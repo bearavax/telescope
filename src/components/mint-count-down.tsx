@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 
-interface MintCountDownProps {your 
+interface MintCountDownProps {
     end: number;
 }
 

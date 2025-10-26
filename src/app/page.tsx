@@ -21,6 +21,7 @@ interface Thread {
   posts: Array<{
     id: string;
     comment: string;
+    imageHash: string | null;
   }>;
 }
 
