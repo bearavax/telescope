@@ -101,7 +101,9 @@ export const ConnectButton = () => {
                         className="snow-button w-full justify-between hover:text-white"
                       >
                         <div className="flex items-center gap-2">
-                          <span>{userStats?.discordId || account.displayName}</span>
+                          <span>
+                            {userStats?.username || userStats?.discordId || account.displayName}
+                          </span>
                         </div>
                         <ChevronDown
                           className={`ml-2 h-4 w-4 transition-transform ${

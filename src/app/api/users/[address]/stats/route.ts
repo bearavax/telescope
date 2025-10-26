@@ -8,7 +8,7 @@ export async function GET(
   try {
     const user = await prisma.user.findUnique({
       where: { address: params.address },
-      select: { xp: true, discordId: true },
+      select: { xp: true, discordId: true, username: true },
     });
 
     if (!user) {
@@ -16,7 +16,7 @@ export async function GET(
     }
 
     return NextResponse.json(
-      { xp: user.xp, discordId: user.discordId },
+      { xp: user.xp, discordId: user.discordId, username: user.username },
       { status: 200 }
     );
   } catch (error) {

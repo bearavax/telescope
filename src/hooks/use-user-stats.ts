@@ -6,7 +6,8 @@ interface UserStats {
   xp: number;
   level: number;
   xpForNextLevel: number;
-  discordId: string;
+  discordId: string | null;
+  username: string | null;
   progress: { currentProgress: number; totalNeeded: number };
 }
 
@@ -21,15 +22,17 @@ export function useUserStats(address: Address, isConnected: boolean) {
         throw new Error("Failed to fetch user stats");
       }
 
-      const { xp, discordId } = await response.json();
+      const { xp, discordId, username } = await response.json();
       console.log("🎮 xp", xp);
       console.log("🎮 discordId", discordId);
+      console.log("🎮 username", username);
       return {
         xp,
         level: calculateLevel(xp),
         xpForNextLevel: getXpForNextLevel(xp),
         progress: getXpProgress(xp),
         discordId,
+        username,
       };
     },
     enabled: !!address && isConnected,
