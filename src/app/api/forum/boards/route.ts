@@ -44,9 +44,6 @@ export async function GET() {
       orderBy: { createdAt: 'asc' }
     });
 
-    // Calculate total threads created across all boards for unlock tracking
-    const totalThreadsCreated = boards.reduce((sum, board) => sum + board.totalThreadsCreated, 0);
-
     return NextResponse.json(boards);
   } catch (error) {
     console.error("Error fetching boards:", error);

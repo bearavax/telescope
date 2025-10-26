@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     }
 
     // Update or create user with lastActive timestamp
-    const user = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { address },
       create: {
         address,

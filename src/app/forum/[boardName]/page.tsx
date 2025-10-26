@@ -7,12 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAccount } from "wagmi";
-import { formatDistanceToNow } from "date-fns";
-import { useUserStats } from "@/hooks/use-user-stats";
-import { Address } from "viem";
 import { PageNavigation } from "@/components/page-navigation";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -41,7 +37,6 @@ export default function BoardPage() {
   const queryClient = useQueryClient();
   const { address, isConnected } = useAccount();
   const boardName = params.boardName as string;
-  const { data: userStats } = useUserStats(address as Address, isConnected);
 
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
