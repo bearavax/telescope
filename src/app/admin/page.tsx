@@ -1,13 +1,13 @@
-import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { prisma } from "@/shared/utils/prisma";
-import { VotesChart } from "@/shared/components/votes-chart";
-import { LevelDistributionChart } from "@/shared/components/level-distribution-chart";
-import { VoteTimeDistributionChart } from "@/shared/components/vote-time-distribution-chart";
-import { DailyTopProjectsChart } from "@/shared/components/daily-top-projects-chart";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { prisma } from "@/lib/prisma";
+import { VotesChart } from "@/components/votes-chart";
+import { LevelDistributionChart } from "@/components/level-distribution-chart";
+import { VoteTimeDistributionChart } from "@/components/vote-time-distribution-chart";
+import { DailyTopProjectsChart } from "@/components/daily-top-projects-chart";
 import Link from "next/link";
-import { AdminWrapper } from "@/features/admin/components/admin/AdminWrapper";
-import { VoteLockSwitch } from "@/features/admin/components/admin/vote-lock-switch";
+import { AdminWrapper } from "@/components/admin/AdminWrapper";
+import { VoteLockSwitch } from "@/components/admin/vote-lock-switch";
 
 interface VoteTimeDistribution {
   hour: number;

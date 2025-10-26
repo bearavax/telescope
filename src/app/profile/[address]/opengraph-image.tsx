@@ -1,4 +1,4 @@
-import { siteConfig } from "@/shared/utils/site";
+import { siteConfig } from "@/lib/site";
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";

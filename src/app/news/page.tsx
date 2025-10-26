@@ -1,10 +1,10 @@
 "use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
-import { NewsFeed } from "@/features/news/components/news-feed";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { NewsFeed } from "@/components/news-feed";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCallback } from "react";
-import { AuthorTags } from "@/shared/components/author-tags";
+import { AuthorTags } from "@/components/author-tags";
 
 const SUBSTACKS = [
   {

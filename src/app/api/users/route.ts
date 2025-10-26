@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { findOrCreateUser } from "@/shared/utils/user";
+import { findOrCreateUser } from "@/lib/user";
 import { z } from "zod";
-import { getXpForNextLevel } from "@/shared/utils/xp";
+import { getXpForNextLevel } from "@/lib/xp";
 
 // Schema to validate the query parameters
 const userQuerySchema = z.object({

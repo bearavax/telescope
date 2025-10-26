@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/shared/utils/prisma";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
 const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);

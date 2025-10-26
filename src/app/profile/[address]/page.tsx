@@ -1,18 +1,17 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
-import { Skeleton } from "@/shared/components/ui/skeleton";
-import { useUserStats } from "@/shared/hooks/use-user-stats";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useUserStats } from "@/hooks/use-user-stats";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns"; // eslint-disable-line
-// import { VoteStreak } from "@/shared/components/vote-streak";
-import { ConnectDiscordAlert } from "@/shared/components/connect-discord-alert";
-import { useUserDiscord } from "@/shared/hooks/use-user-discord";
+// import { VoteStreak } from "@/components/vote-streak";
+import { ConnectDiscordAlert } from "@/components/connect-discord-alert";
+import { useUserDiscord } from "@/hooks/use-user-discord";
 import { Address } from "viem";
 import { useParams } from "next/navigation";
 import { useAccount } from "wagmi";
-import { UserBadge } from "@/shared/components/user-badge";
-import { WalletClassBadge } from "@/shared/components/wallet-class-badge";
+import { UserBadge } from "@/components/user-badge";
 
 interface VoteHistory {
   votes: {
@@ -149,7 +148,6 @@ export default function ProfilePage() {
                     38
                   )}`}
                 <UserBadge address={addressParam} />
-                <WalletClassBadge address={addressParam} />
               </h1>
               {/* TODO: Create badge component */}
               <p className="text-sm text-zinc-500">
