@@ -44,7 +44,6 @@ export default function BoardPage() {
   const [showNewThread, setShowNewThread] = useState(false);
   const [subject, setSubject] = useState("");
   const [comment, setComment] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [stayAnonymous, setStayAnonymous] = useState(() => {
@@ -62,6 +61,7 @@ export default function BoardPage() {
 
   useEffect(() => {
     fetchThreads();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boardName]);
 
   const fetchThreads = async () => {
