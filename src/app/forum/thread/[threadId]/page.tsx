@@ -11,8 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAccount } from "wagmi";
-import { useUserStats } from "@/hooks/use-user-stats";
-import { Address } from "viem";
 import { PageNavigation } from "@/components/page-navigation";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -59,7 +57,6 @@ export default function ThreadPage() {
   const [loading, setLoading] = useState(true);
   const [replying, setReplying] = useState(false);
   const [comment, setComment] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [stayAnonymous, setStayAnonymous] = useState(() => {
@@ -75,11 +72,6 @@ export default function ThreadPage() {
     localStorage.setItem('stayAnonymous', JSON.stringify(checked));
   };
 
-  useEffect(() => {
-    fetchThread();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [threadId]);
-
   const fetchThread = async () => {
     try {
       const response = await fetch(`/api/forum/threads/${threadId}`);
@@ -91,6 +83,11 @@ export default function ThreadPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchThread();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [threadId]);
 
   const createReply = async () => {
     if (!address || !comment.trim() || !thread) return;
@@ -123,7 +120,7 @@ export default function ThreadPage() {
           comment,
           walletAddress: address,
           boardName: thread.board.name,
-          imageHash: uploadedImageUrl || imageUrl.trim() || null,
+          imageHash: uploadedImageUrl || null,
           anonymous: stayAnonymous
         })
       });
@@ -136,7 +133,6 @@ export default function ThreadPage() {
           alert(`Reply posted! You earned 1 XP. Total XP: ${data.newXp} (Level ${data.newLevel})`);
         }
         setComment("");
-        setImageUrl("");
         setImageFile(null);
         setImagePreview("");
         fetchThread(); // Refresh thread to show new reply
