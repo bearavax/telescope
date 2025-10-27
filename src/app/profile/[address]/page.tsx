@@ -137,7 +137,7 @@ export default function ProfilePage() {
 
       {/* Profile Header */}
       <div className="bg-white rounded-md shadow p-6 mb-8">
-        <div className="flex items-start justify-between">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Avatar className="h-20 w-20">
               {discordUser?.avatar_url ? (
