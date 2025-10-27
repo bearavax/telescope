@@ -15,7 +15,7 @@ import { Address } from "viem";
 import { useParams } from "next/navigation";
 import { useAccount } from "wagmi";
 import { UserBadge } from "@/components/user-badge";
-import { MessageSquare, ThumbsUp, Award, ExternalLink, ChevronDown, ChevronUp, Flame, Lock } from "lucide-react";
+import { MessageSquare, ThumbsUp, Award, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,7 @@ export default function ProfilePage() {
     userStats?.discordId || ""
   );
   const { data: forumStats, isLoading: isLoadingForumStats } = useForumStats(addressParam);
-  const { data: avaxBadge, isLoading: isLoadingAvaxBadge } = useAvaxBadge(addressParam);
+  const { data: avaxBadge } = useAvaxBadge(addressParam);
 
   const { data: voteHistory, isLoading: isLoadingHistory } =
     useQuery<VoteHistory>({
