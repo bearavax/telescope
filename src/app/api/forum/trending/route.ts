@@ -6,7 +6,9 @@ export async function GET() {
     // Fetch trending threads with posts in one query - exclude deleted threads
     const threads = await prisma.thread.findMany({
       where: {
-        deleted: false
+        NOT: {
+          deleted: true
+        }
       },
       take: 10,
       orderBy: {

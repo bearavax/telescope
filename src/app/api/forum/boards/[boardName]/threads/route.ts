@@ -32,7 +32,9 @@ export async function GET(
     const threads = await prisma.thread.findMany({
       where: {
         boardId: board.id,
-        deleted: false // Only show non-deleted threads
+        NOT: {
+          deleted: true
+        }
       },
       include: {
         posts: {
@@ -98,7 +100,9 @@ export async function POST(
       const threadCount = await tx.thread.count({
         where: {
           boardId: board.id,
-          deleted: false
+          NOT: {
+            deleted: true
+          }
         }
       });
 
@@ -107,7 +111,9 @@ export async function POST(
         const oldestThread = await tx.thread.findFirst({
           where: {
             boardId: board.id,
-            deleted: false
+            NOT: {
+              deleted: true
+            }
           },
           orderBy: { bumpedAt: 'asc' }
         });
