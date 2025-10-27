@@ -14,7 +14,7 @@ import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from "wa
 import { parseEther } from "viem";
 import { useToast } from "@/hooks/use-toast";
 
-const DONATION_ADDRESS = "0x29ef2557405ddcf645dabf04a9b79afd14c698ae";
+const DONATION_ADDRESS = "0x0C39f0970CF3118Fd004A3f069E59dabc6714980";
 
 export function DonateModal() {
   const [amount, setAmount] = useState("");

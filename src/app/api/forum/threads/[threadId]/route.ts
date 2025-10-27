@@ -159,12 +159,12 @@ export async function POST(
         }
       });
 
-      // Update thread bump time and reply count
+      // Update thread bump time and reply count (only increment for actual replies, not OP)
       const updatedThread = await tx.thread.update({
         where: { id: threadId },
         data: {
           bumpedAt: new Date(),
-          replyCount: { increment: 1 }
+          ...(isOpPost ? {} : { replyCount: { increment: 1 } })
         }
       });
 

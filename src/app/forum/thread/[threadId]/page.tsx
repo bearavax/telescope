@@ -193,19 +193,19 @@ export default function ThreadPage() {
 
   return (
     <div className="w-full">
-      <div className="w-full max-w-screen-lg mx-auto -mt-6 px-8 relative z-10 mb-4">
+      <div className="w-full max-w-screen-lg mx-auto -mt-6 px-4 md:px-8 relative z-10 mb-4">
         <PageNavigation />
       </div>
-      <div className="w-full max-w-screen-lg mx-auto px-8 pb-16">
+      <div className="w-full max-w-screen-lg mx-auto px-4 md:px-8 pb-8 md:pb-16">
         {/* 4chan-style navigation */}
-        <div className="flex items-center justify-between mb-4 text-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 text-xs sm:text-sm gap-2">
           <div className="flex items-center gap-2">
             <Link href={`/forum/${thread.board.name}`} className="text-primary hover:underline">
               &gt;&gt;Back to /{thread.board.name}/
             </Link>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-muted-foreground">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <span className="text-muted-foreground text-xs">
               {thread.posts.length} / {thread.posts.filter(p => p.imageHash).length} / {new Set(thread.posts.map(x => x.walletAddress)).size}
             </span>
             <button onClick={scrollToBottom} className="text-primary hover:underline">
@@ -221,7 +221,7 @@ export default function ThreadPage() {
         </div>
 
       {thread.subject && (
-        <h1 className="text-3xl font-bold mb-4">{thread.subject}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-4">{thread.subject}</h1>
       )}
 
       <div className="space-y-4 mb-8">

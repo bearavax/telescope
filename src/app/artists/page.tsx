@@ -12,7 +12,7 @@ export default function ArtistsPage() {
           <div className="px-8 py-6 space-y-6">
             {/* Header & Prompt Combined */}
             <div>
-              <h2 className="text-2xl font-bold">Team1 Art Club - Cohort 1</h2>
+              <h2 className="text-2xl font-bold">Art Club - Cohort 1</h2>
               <p className="text-zinc-600 mt-1 mb-4">Submit artwork based on the prompt below</p>
               <div className="bg-zinc-50 rounded-lg p-4 border border-zinc-200">
                 <div className="flex items-center gap-2 mb-1">

@@ -158,6 +158,8 @@ model Thread {
   createdAt   DateTime @default(now())
   replyCount  Int      @default(0)
   posts       Post[]
+  deleted     Boolean  @default(false)
+  deletedAt   DateTime?
 }
 
 model Post {

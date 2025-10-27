@@ -97,14 +97,14 @@ export default function Home() {
 
   return (
     <div className="w-full">
-      <div className="w-full max-w-screen-lg mx-auto -mt-6 px-8 relative z-10 mb-16">
+      <div className="w-full max-w-screen-lg mx-auto -mt-6 px-4 md:px-8 relative z-10 mb-8 md:mb-16">
         <PageNavigation />
 
         <div className="space-y-6">
           {/* User Profile / Connect Wallet */}
-          <Card className="p-6">
+          <Card className="p-4 md:p-6">
             {isConnected ? (
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 {discordUser?.avatar_url ? (
                   <img
                     src={discordUser.avatar_url}
@@ -128,8 +128,8 @@ export default function Home() {
                   )}
                 </div>
                 {!isUserStatsLoading && userStats && (
-                  <div className="min-w-[300px]">
-                    <div className="flex items-center justify-between text-sm mb-1">
+                  <div className="w-full sm:min-w-[300px]">
+                    <div className="flex items-center justify-between text-xs sm:text-sm mb-1">
                       <span className="font-semibold">Level {userStats.level || 1}</span>
                       <span className="text-muted-foreground text-xs">
                         {userStats.xp || 0} XP • {userStats.xpForNextLevel || 21} XP until next level

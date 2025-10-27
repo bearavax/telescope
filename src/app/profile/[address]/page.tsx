@@ -127,7 +127,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="w-full max-w-screen-lg mx-auto -mt-6 px-8 relative z-10 mb-16">
+    <div className="w-full max-w-screen-lg mx-auto -mt-6 px-4 md:px-8 relative z-10 mb-8 md:mb-16">
       {/* Show Discord alert if no Discord account is connected and on own profile */}
       {isOwnProfile && !discordUser && (
         <div className="mb-8">
@@ -136,8 +136,8 @@ export default function ProfilePage() {
       )}
 
       {/* Profile Header */}
-      <div className="bg-white rounded-md shadow p-6 mb-8">
-        <div className="flex items-center justify-between">
+      <div className="bg-white rounded-md shadow p-4 md:p-6 mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Avatar className="h-20 w-20">
               {discordUser?.avatar_url ? (
@@ -167,11 +167,11 @@ export default function ProfilePage() {
               </p>
             </div>
           </div>
-          <div className="text-right flex-shrink-0">
-            <p className="text-xl font-bold text-zinc-900">
+          <div className="w-full sm:w-auto text-left sm:text-right flex-shrink-0">
+            <p className="text-lg sm:text-xl font-bold text-zinc-900">
               Level {userStats?.level}
             </p>
-            <p className="text-sm text-zinc-700 whitespace-nowrap">
+            <p className="text-xs sm:text-sm text-zinc-700 whitespace-nowrap">
               {userStats?.xp} XP • {userStats?.xpForNextLevel} XP until next level
             </p>
           </div>

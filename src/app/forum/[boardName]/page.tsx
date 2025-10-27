@@ -190,7 +190,7 @@ export default function BoardPage() {
               </label>
               <Input
                 type="file"
-                accept="image/*"
+                accept="image/*,image/gif"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {

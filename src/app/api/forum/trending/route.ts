@@ -3,8 +3,11 @@ import prisma from "@/lib/prisma";
 
 export async function GET() {
   try {
-    // Fetch trending threads with posts in one query
+    // Fetch trending threads with posts in one query - exclude deleted threads
     const threads = await prisma.thread.findMany({
+      where: {
+        deleted: false
+      },
       take: 10,
       orderBy: {
         bumpedAt: 'desc'

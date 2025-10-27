@@ -30,7 +30,10 @@ export async function GET(
     }
 
     const threads = await prisma.thread.findMany({
-      where: { boardId: board.id },
+      where: {
+        boardId: board.id,
+        deleted: false // Only show non-deleted threads
+      },
       include: {
         posts: {
           orderBy: { createdAt: 'asc' },
@@ -91,27 +94,32 @@ export async function POST(
 
     // Create thread and first post in a transaction
     const result = await prisma.$transaction(async (tx) => {
-      // Check if board is at max threads (90)
+      // Check if board is at max threads (90) - only count non-deleted threads
       const threadCount = await tx.thread.count({
-        where: { boardId: board.id }
+        where: {
+          boardId: board.id,
+          deleted: false
+        }
       });
 
-      // If at max, delete the oldest (least recently bumped) thread
+      // If at max, soft delete the oldest (least recently bumped) thread
       if (threadCount >= 90) {
         const oldestThread = await tx.thread.findFirst({
-          where: { boardId: board.id },
-          orderBy: { bumpedAt: 'asc' },
-          include: { posts: true }
+          where: {
+            boardId: board.id,
+            deleted: false
+          },
+          orderBy: { bumpedAt: 'asc' }
         });
 
         if (oldestThread) {
-          // Delete all posts in the thread first
-          await tx.post.deleteMany({
-            where: { threadId: oldestThread.id }
-          });
-          // Then delete the thread
-          await tx.thread.delete({
-            where: { id: oldestThread.id }
+          // Soft delete the thread instead of hard deleting
+          await tx.thread.update({
+            where: { id: oldestThread.id },
+            data: {
+              deleted: true,
+              deletedAt: new Date()
+            }
           });
         }
       }
