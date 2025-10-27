@@ -18,7 +18,8 @@ model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   address   String   @unique
   username  String?
-  xp        Int      @default(0)
+  xp        Int      @default(0) // Total XP earned all-time (for leveling, permanent)
+  coins     Int      @default(0) // Spendable coins (same value as XP but gets spent on rewards)
   level     Int      @default(1)
   streak    Int      @default(0)
   longestStreak  Int      @default(0)
@@ -29,6 +30,7 @@ model User {
   votesS1   VoteS1[]
   artVotes  ArtVote[]
   discordId String?
+  claims    Claim[]
 }
 
 model Project {
@@ -173,4 +175,29 @@ model Post {
   isOp          Boolean  @default(false)
   anonymous     Boolean  @default(true) // Whether to hide wallet/discord info
   createdAt     DateTime @default(now())
+}
+
+model Reward {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  description     String
+  imageUrl        String
+  nftCollectionUrl String  // Salvor collection URL
+  tokenId         String?  // Specific token ID if applicable
+  xpRequired      Int      // XP needed to claim
+  totalAvailable  Int      // Total number of rewards
+  claimed         Int      @default(0) // Number already claimed
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  claims          Claim[]
+}
+
+model Claim {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  rewardId    String   @db.ObjectId
+  reward      Reward   @relation(fields: [rewardId], references: [id])
+  claimedAt   DateTime @default(now())
+  coinsSpent  Int      // Coins spent at time of claim
 }

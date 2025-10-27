@@ -6,6 +6,15 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
+  async redirects() {
+    return [
+      {
+        source: '/claim',
+        destination: '/shop',
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
@@ -51,6 +60,14 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'secure.gravatar.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'rcdn.salvor.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.discordapp.com',
       },
     ],
   },

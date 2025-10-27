@@ -135,6 +135,7 @@ export async function POST(
           where: { id: user.id },
           data: {
             xp: { increment: 1 },
+            coins: { increment: 1 },
             level: { set: calculateLevel(user.xp + 1) },
           },
         }),

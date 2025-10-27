@@ -128,11 +128,11 @@ export default function Home() {
                   )}
                 </div>
                 {!isUserStatsLoading && userStats && (
-                  <div className="w-full sm:min-w-[300px]">
+                  <div className="w-full sm:w-auto sm:min-w-[280px] sm:max-w-[320px]">
                     <div className="flex items-center justify-between text-xs sm:text-sm mb-1">
                       <span className="font-semibold">Level {userStats.level || 1}</span>
                       <span className="text-muted-foreground text-xs">
-                        {userStats.xp || 0} XP • {userStats.xpForNextLevel || 21} XP until next level
+                        {userStats.xp || 0} XP • {userStats.xpForNextLevel || 21} XP next
                       </span>
                     </div>
                     <div className="w-full bg-zinc-200 rounded-full h-2">

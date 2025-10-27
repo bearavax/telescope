@@ -302,9 +302,14 @@ export default async function AdminPage() {
       <div className="container mx-auto py-8 max-w-screen-lg gap-2">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-          <Button asChild>
-            <Link href="/admin/projects">Projects</Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild variant="outline">
+              <Link href="/admin/claims">Claims</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/admin/projects">Projects</Link>
+            </Button>
+          </div>
         </div>
         <div className="my-4">
           <VoteLockSwitch />

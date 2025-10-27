@@ -165,6 +165,29 @@ body {
   transform: translateY(2px);
 }
 
+.snow-button-card {
+  position: relative;
+  margin-top: 12px;
+}
+
+.snow-button-card::before {
+  --overflow-x: 4px;
+  --snow-image: url("/button_snow.webp");
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: calc(var(--overflow-x) * -1);
+  border-image-source: var(--snow-image);
+  border-image-slice: calc(6 * 56 / 20) fill;
+  border-image-width: calc(28px / 3);
+  border-image-repeat: round;
+  width: calc(100% + var(--overflow-x) * 2);
+  height: 22px;
+  filter: drop-shadow(0 2px 1px rgb(0 0 0 / 0.25));
+  opacity: 1;
+  z-index: 10;
+}
+
 @keyframes fall {
   0% {
     transform: translateY(-20px) translateX(0);

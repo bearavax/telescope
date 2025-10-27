@@ -42,7 +42,8 @@ export function ForumOverview() {
   const [recentThreads, setRecentThreads] = useState<Array<Thread & { boardName: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ totalBoards: 0, totalThreads: 0 });
-  
+  const [unlockProgress, setUnlockProgress] = useState(0); // Track all-time threads for unlocks
+
   // Define unlock thresholds
   const unlockThresholds = {
     'Development & Technical': 100,
@@ -166,11 +167,14 @@ export function ForumOverview() {
         if (Array.isArray(boardsData)) {
           setBoards(boardsData);
 
-          // Calculate stats - use totalThreadsCreated for unlock tracking (all-time)
+          // Calculate stats
           const totalThreadsCreated = boardsData.reduce((sum, board) => sum + (board.totalThreadsCreated || 0), 0);
+          const currentThreadCount = boardsData.reduce((sum, board) => sum + (board._count?.threads || 0), 0);
+
+          setUnlockProgress(totalThreadsCreated); // Use all-time for unlocks
           setStats({
             totalBoards: boardsData.length,
-            totalThreads: totalThreadsCreated // Use all-time count for unlocks
+            totalThreads: currentThreadCount // Show current active threads
           });
         }
 
@@ -349,13 +353,13 @@ export function ForumOverview() {
           <div>
             <h3 className="text-sm font-bold text-muted-foreground mb-3">
               Development & Technical
-              {stats.totalThreads < unlockThresholds['Development & Technical'] && (
+              {unlockProgress < unlockThresholds['Development & Technical'] && (
                 <span className="ml-2 text-xs inline-flex items-center gap-1 text-muted-foreground">
                   <Lock className="h-3 w-3" /> {unlockThresholds['Development & Technical']} threads to unlock
                 </span>
               )}
             </h3>
-            <Card className={`overflow-hidden ${stats.totalThreads < unlockThresholds['Development & Technical'] ? 'opacity-40 pointer-events-none' : ''}`}>
+            <Card className={`overflow-hidden ${unlockProgress < unlockThresholds['Development & Technical'] ? 'opacity-40 pointer-events-none' : ''}`}>
               <div className="divide-y">
                 {boards.filter(b => ['bridge', 'tech', 'sec', 'dev'].includes(b.name)).sort((a, b) => {
                   const order = ['bridge', 'tech', 'sec', 'dev'];
@@ -392,13 +396,13 @@ export function ForumOverview() {
           <div>
             <h3 className="text-sm font-bold text-muted-foreground mb-3">
               DeFi & Trading
-              {stats.totalThreads < unlockThresholds['DeFi & Trading'] && (
+              {unlockProgress < unlockThresholds['DeFi & Trading'] && (
                 <span className="ml-2 text-xs inline-flex items-center gap-1 text-muted-foreground">
                   <Lock className="h-3 w-3" /> {unlockThresholds['DeFi & Trading']} threads to unlock
                 </span>
               )}
             </h3>
-            <Card className={`overflow-hidden ${stats.totalThreads < unlockThresholds['DeFi & Trading'] ? 'opacity-40 pointer-events-none' : ''}`}>
+            <Card className={`overflow-hidden ${unlockProgress < unlockThresholds['DeFi & Trading'] ? 'opacity-40 pointer-events-none' : ''}`}>
               <div className="divide-y">
                 {boards.filter(b => ['defi', 'price', 'meme'].includes(b.name)).sort((a, b) => {
                   const order = ['defi', 'price', 'meme'];
@@ -435,13 +439,13 @@ export function ForumOverview() {
           <div>
             <h3 className="text-sm font-bold text-muted-foreground mb-3">
               Projects & Applications
-              {stats.totalThreads < unlockThresholds['Projects & Applications'] && (
+              {unlockProgress < unlockThresholds['Projects & Applications'] && (
                 <span className="ml-2 text-xs inline-flex items-center gap-1 text-muted-foreground">
                   <Lock className="h-3 w-3" /> {unlockThresholds['Projects & Applications']} threads to unlock
                 </span>
               )}
             </h3>
-            <Card className={`overflow-hidden ${stats.totalThreads < unlockThresholds['Projects & Applications'] ? 'opacity-40 pointer-events-none' : ''}`}>
+            <Card className={`overflow-hidden ${unlockProgress < unlockThresholds['Projects & Applications'] ? 'opacity-40 pointer-events-none' : ''}`}>
               <div className="divide-y">
                 {boards.filter(b => ['nft', 'game', 'eco', 'adopt'].includes(b.name)).sort((a, b) => {
                   const order = ['nft', 'game', 'eco', 'adopt'];
@@ -478,13 +482,13 @@ export function ForumOverview() {
           <div>
             <h3 className="text-sm font-bold text-muted-foreground mb-3">
               Governance & Institutional
-              {stats.totalThreads < unlockThresholds['Governance & Institutional'] && (
+              {unlockProgress < unlockThresholds['Governance & Institutional'] && (
                 <span className="ml-2 text-xs inline-flex items-center gap-1 text-muted-foreground">
                   <Lock className="h-3 w-3" /> {unlockThresholds['Governance & Institutional']} threads to unlock
                 </span>
               )}
             </h3>
-            <Card className={`overflow-hidden ${stats.totalThreads < unlockThresholds['Governance & Institutional'] ? 'opacity-40 pointer-events-none' : ''}`}>
+            <Card className={`overflow-hidden ${unlockProgress < unlockThresholds['Governance & Institutional'] ? 'opacity-40 pointer-events-none' : ''}`}>
               <div className="divide-y">
                 {boards.filter(b => ['gov', 'inst', 'reg', 'rwa'].includes(b.name)).sort((a, b) => {
                   const order = ['gov', 'inst', 'reg', 'rwa'];

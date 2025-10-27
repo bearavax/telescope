@@ -3,16 +3,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Newspaper, Menu, Home } from "lucide-react";
+import { Newspaper, Menu, Home, Gift, CircleDollarSign } from "lucide-react";
+import { useAccount } from "wagmi";
+import { Address } from "viem";
 
 import { FAQ } from "@/components/faq";
 import { ConnectButton } from "@/components/connect-button";
 import { BackButton } from "@/components/back-button";
 import { DonateModal } from "@/components/donate-modal";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useUserStats } from "@/hooks/use-user-stats";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { address, isConnected } = useAccount();
+  const { data: userStats } = useUserStats(address as Address, isConnected);
 
   return (
     <header className="w-full bg-white dark:bg-zinc-900 bg border-b-4 border-zinc-100 dark:border-zinc-700">
@@ -28,7 +33,7 @@ export function Navbar() {
           height={80}
           style={{ width: 'auto', height: 'auto' }}
         />
-        <div className="flex items-center relative z-10 justify-center gap-4 md:self-auto">
+        <div className="flex items-center relative z-10 justify-center gap-2 md:self-auto">
           <div className="hidden md:flex items-center gap-2">
             <Link
               href="/news"
@@ -37,7 +42,20 @@ export function Navbar() {
               <Newspaper className="h-4 w-4" />
               News
             </Link>
+            <Link
+              href="/shop"
+              className="flex items-center gap-2 bg-white rounded-lg px-4 py-2 h-9 shadow hover:bg-zinc-50 transition-colors"
+            >
+              <Gift className="h-4 w-4" />
+              Shop
+            </Link>
           </div>
+          {isConnected && userStats && (
+            <div className="hidden md:flex items-center gap-1.5 bg-white rounded-lg px-3 py-2 h-9 shadow">
+              <CircleDollarSign className="h-4 w-4 text-yellow-600" />
+              <span className="font-bold text-sm">{userStats.coins || 0}</span>
+            </div>
+          )}
           <DonateModal />
           <FAQ />
           <ConnectButton />
@@ -60,6 +78,14 @@ export function Navbar() {
                 >
                   <Newspaper className="h-4 w-4" />
                   News
+                </Link>
+                <Link
+                  href="/shop"
+                  className="flex items-center gap-2 "
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Gift className="h-4 w-4" />
+                  Shop
                 </Link>
               </nav>
             </SheetContent>
