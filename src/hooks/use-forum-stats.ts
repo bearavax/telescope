@@ -9,7 +9,6 @@ interface ForumStats {
   boardCount: number;
   joinedDate: string | null;
   isSuperOG: boolean;
-  isEarlyAdopter: boolean;
   currentPostStreak: number;
   longestPostStreak: number;
 }

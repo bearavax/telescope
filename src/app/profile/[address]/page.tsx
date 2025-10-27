@@ -179,7 +179,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Badges Section */}
-      {(avaxBadge || forumStats?.isSuperOG || forumStats?.isEarlyAdopter) && (
+      {(avaxBadge || forumStats?.isSuperOG || (voteHistory && voteHistory.votes.length > 0)) && (
         <Card className="p-6 mb-8">
           <h2 className="text-xl font-semibold text-zinc-900 mb-4 flex items-center gap-2">
             <Award className="h-5 w-5" />
@@ -207,17 +207,24 @@ export default function ProfilePage() {
                 <Badge variant="secondary" className="text-sm px-4 py-2">
                   Super OG
                 </Badge>
-                <span className="text-xs text-muted-foreground">First 100 users</span>
+                <span className="text-xs text-muted-foreground">First 100 to post on forum</span>
               </div>
             )}
-            {forumStats?.isEarlyAdopter && (
-              <div className="flex items-center gap-3">
-                <Badge variant="secondary" className="text-sm px-4 py-2">
-                  Early Adopter
-                </Badge>
-                <span className="text-xs text-muted-foreground">First 1000 users</span>
-              </div>
-            )}
+            {voteHistory && (() => {
+              const seasons = new Set<string>();
+              voteHistory.votes.forEach(vote => {
+                if (vote.season === 'Season 1') seasons.add('Season 1');
+                if (vote.season === 'Current Season') seasons.add('Season 2');
+              });
+              return Array.from(seasons).sort().map(season => (
+                <div key={season} className="flex items-center gap-3">
+                  <Badge variant="secondary" className="text-sm px-4 py-2">
+                    {season === 'Season 1' ? 'Season 1 Participant' : 'Season 2 Participant'}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">Voted in {season === 'Season 1' ? 'S1' : 'S2'}</span>
+                </div>
+              ));
+            })()}
           </div>
         </Card>
       )}

@@ -66,27 +66,35 @@ export async function GET(
       ).values()
     );
 
-    // Check badge eligibility based on signup order
+    // Check badge eligibility based on forum post order
     let isSuperOG = false;
-    let isEarlyAdopter = false;
 
-    if (user?.createdAt) {
-      // Count how many users signed up before this user
-      const usersBeforeCount = await prisma.user.count({
-        where: {
-          createdAt: {
-            lt: user.createdAt
-          }
-        }
+    if (totalPosts > 0) {
+      // Get the user's first post
+      const firstPost = await prisma.post.findFirst({
+        where: { walletAddress: address },
+        orderBy: { createdAt: 'asc' },
+        select: { createdAt: true }
       });
 
-      // Super OG: First 100 signups
-      if (usersBeforeCount < 100) {
-        isSuperOG = true;
-      }
-      // Early Adopter: Signups 101-1100 (first 1000 after Super OG)
-      else if (usersBeforeCount >= 100 && usersBeforeCount < 1100) {
-        isEarlyAdopter = true;
+      if (firstPost) {
+        // Count how many unique users posted before this user's first post
+        const usersBeforeCount = await prisma.post.groupBy({
+          by: ['walletAddress'],
+          where: {
+            createdAt: {
+              lt: firstPost.createdAt
+            }
+          },
+          _count: {
+            walletAddress: true
+          }
+        });
+
+        // Super OG: First 100 users to post on the forum
+        if (usersBeforeCount.length < 100) {
+          isSuperOG = true;
+        }
       }
     }
 
@@ -152,7 +160,6 @@ export async function GET(
       boardCount: uniqueBoards.length,
       joinedDate: user?.createdAt,
       isSuperOG,
-      isEarlyAdopter,
       currentPostStreak,
       longestPostStreak,
     });
