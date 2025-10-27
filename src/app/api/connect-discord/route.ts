@@ -22,6 +22,7 @@ export async function POST(req: Request) {
     });
 
     const discordId = session?.discordUser?.id;
+    const username = session?.discordUser?.username;
 
     if (!discordId) {
       console.error("❌ No Discord ID found in session");
@@ -84,9 +85,11 @@ export async function POST(req: Request) {
         streak: 0,
         longestStreak: 0,
         discordId,
+        username,
       },
       update: {
         discordId,
+        username,
       },
     });
     console.log("✅ Database operation completed:", {

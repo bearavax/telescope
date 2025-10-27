@@ -47,8 +47,9 @@ export async function GET(
           where: { walletAddress: post.walletAddress }
         });
 
-        // Fetch Discord avatar if discordId exists
+        // Fetch Discord data if discordId exists
         let discordAvatar = null;
+        let discordUsername = user?.username; // Start with DB username
         if (user?.discordId) {
           try {
             const discordResponse = await fetch(`https://discord.com/api/v10/users/${user.discordId}`, {
@@ -61,19 +62,23 @@ export async function GET(
               if (discordData.avatar) {
                 discordAvatar = `https://cdn.discordapp.com/avatars/${user.discordId}/${discordData.avatar}.png`;
               }
+              // Get username from Discord if not in DB
+              if (!discordUsername && discordData.username) {
+                discordUsername = discordData.username;
+              }
             }
           } catch (error) {
-            console.error("Error fetching Discord avatar:", error);
+            console.error("Error fetching Discord data:", error);
           }
         }
 
         return {
           ...post,
-          user: user ? { 
-            createdAt: user.createdAt, 
+          user: user ? {
+            createdAt: user.createdAt,
             postCount,
             discordId: user.discordId,
-            username: user.username,
+            username: discordUsername,
             discordAvatar
           } : undefined
         };

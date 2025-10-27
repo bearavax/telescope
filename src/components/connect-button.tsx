@@ -13,6 +13,7 @@ import {
 import { ChevronDown, LogOut } from "lucide-react";
 import { useAccount, useDisconnect } from "wagmi";
 import { useUserStats } from "@/hooks/use-user-stats";
+import { useUserDiscord } from "@/hooks/use-user-discord";
 import Link from "next/link";
 import { Address } from "viem";
 import { setWalletAddressCookie } from "@/lib/cookies";
@@ -23,6 +24,7 @@ export const ConnectButton = () => {
   const { disconnect } = useDisconnect();
   const { address, isConnected } = useAccount();
   const { data: userStats } = useUserStats(address as Address, isConnected);
+  const { data: discordUser } = useUserDiscord(userStats?.discordId || "");
 
   // Set cookie when wallet connects
   useEffect(() => {
@@ -102,7 +104,7 @@ export const ConnectButton = () => {
                       >
                         <div className="flex items-center gap-2">
                           <span>
-                            {userStats?.username || userStats?.discordId || account.displayName}
+                            {discordUser?.username || userStats?.username || userStats?.discordId || account.displayName}
                           </span>
                         </div>
                         <ChevronDown

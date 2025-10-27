@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { User } from "lucide-react";
+import { User, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -59,6 +59,9 @@ export default function ThreadPage() {
   const [comment, setComment] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [autoUpdate, setAutoUpdate] = useState(false);
+  const [expandedImages, setExpandedImages] = useState<Set<string>>(new Set());
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [stayAnonymous, setStayAnonymous] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('stayAnonymous');
@@ -74,6 +77,7 @@ export default function ThreadPage() {
 
   const fetchThread = async () => {
     try {
+      setIsRefreshing(true);
       const response = await fetch(`/api/forum/threads/${threadId}`);
       const data = await response.json();
       setThread(data);
@@ -81,6 +85,7 @@ export default function ThreadPage() {
       console.error("Error fetching thread:", error);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -88,6 +93,22 @@ export default function ThreadPage() {
     fetchThread();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [threadId]);
+
+  // Auto update functionality
+  useEffect(() => {
+    if (!autoUpdate) return;
+
+    const interval = setInterval(() => {
+      fetchThread();
+    }, 10000); // Update every 10 seconds
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoUpdate, threadId]);
+
+  const scrollToBottom = () => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  };
 
   const createReply = async () => {
     if (!address || !comment.trim() || !thread) return;
@@ -176,12 +197,28 @@ export default function ThreadPage() {
         <PageNavigation />
       </div>
       <div className="w-full max-w-screen-lg mx-auto px-8 pb-16">
-        <Link
-          href={`/forum/${thread.board.name}`}
-          className="text-primary hover:underline mb-2 inline-block"
-        >
-          ← Back to /{thread.board.name}/
-        </Link>
+        {/* 4chan-style navigation */}
+        <div className="flex items-center justify-between mb-4 text-sm">
+          <div className="flex items-center gap-2">
+            <Link href={`/forum/${thread.board.name}`} className="text-primary hover:underline">
+              &gt;&gt;Back to /{thread.board.name}/
+            </Link>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-muted-foreground">
+              {thread.posts.length} / {thread.posts.filter(p => p.imageHash).length} / {new Set(thread.posts.map(x => x.walletAddress)).size}
+            </span>
+            <button onClick={scrollToBottom} className="text-primary hover:underline">
+              [Bottom]
+            </button>
+            <button
+              onClick={() => setAutoUpdate(!autoUpdate)}
+              className={`hover:underline ${autoUpdate ? 'text-green-600 font-semibold' : 'text-primary'}`}
+            >
+              [Auto]
+            </button>
+          </div>
+        </div>
 
       {thread.subject && (
         <h1 className="text-3xl font-bold mb-4">{thread.subject}</h1>
@@ -189,58 +226,66 @@ export default function ThreadPage() {
 
       <div className="space-y-4 mb-8">
         {thread.posts.map((post, index) => (
-          <Card key={post.id} className="p-6">
-            <div className="flex gap-4 mb-4">
-              {/* User Avatar */}
-              {post.anonymous ? (
-                <div className="w-12 h-12 rounded-lg bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center flex-shrink-0">
-                  <User className="h-6 w-6 text-zinc-400 dark:text-zinc-500" />
+          <div key={post.id} className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+            <div className={`p-4 rounded ${post.isOp ? 'bg-white' : 'bg-zinc-300'}`}>
+              {/* User Info Bar */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3 text-sm">
+                  {/* Profile Picture */}
+                  {post.anonymous ? (
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <User className="h-4 w-4 text-primary" />
+                    </div>
+                  ) : post.user?.discordAvatar ? (
+                    <img
+                      src={post.user.discordAvatar}
+                      alt="Profile"
+                      className="w-8 h-8 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <User className="h-4 w-4 text-primary" />
+                    </div>
+                  )}
+                  <span className="font-semibold text-green-700 dark:text-green-500">
+                    {post.anonymous
+                      ? 'Anonymous'
+                      : (post.user?.username || post.user?.discordId || (post.walletAddress.slice(0, 6) + '...' + post.walletAddress.slice(-4)))
+                    }
+                  </span>
+                  <span className="text-muted-foreground">{new Date(post.createdAt).toLocaleString()}</span>
+                  <span className="text-muted-foreground">ID: {post.posterId}</span>
+                  {post.isOp && <Badge variant="secondary" className="text-xs">OP</Badge>}
+                  <button className="text-primary hover:underline text-xs">&gt;&gt;{index + 1}</button>
                 </div>
-              ) : post.user?.discordAvatar ? (
-                <img 
-                  src={post.user.discordAvatar} 
-                  alt="Profile" 
-                  className="w-12 h-12 rounded-lg flex-shrink-0 object-cover"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <User className="h-6 w-6 text-primary" />
-                </div>
-              )}
-              
-              {/* Post Content */}
-              <div className="flex-1 min-w-0">
-                {/* User Info Bar */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="font-semibold">
-                      {post.anonymous 
-                        ? 'Anonymous' 
-                        : (post.user?.username || post.user?.discordId || (post.walletAddress.slice(0, 6) + '...' + post.walletAddress.slice(-4)))
-                      }
-                    </span>
-                    {post.isOp && <Badge variant="secondary">OP</Badge>}
-                    <span className="text-sm text-muted-foreground">ID: {post.posterId}</span>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    <span>No.{index + 1}</span>
-                    <span className="ml-4">{new Date(post.createdAt).toLocaleString()}</span>
-                  </div>
-                </div>
-                
+              </div>
+
+              {/* Post content with image on left */}
+              <div className="flex flex-col gap-3">
                 {/* Post Image */}
                 {post.imageHash && (
-                  <div className="mb-4">
-                    <img 
-                      src={post.imageHash} 
-                      alt="Post image" 
-                      className="rounded border max-h-96 max-w-full object-contain"
+                  <div className={expandedImages.has(post.id) ? "w-full" : "flex-shrink-0 max-w-[200px]"}>
+                    <img
+                      src={post.imageHash}
+                      alt="Post image"
+                      className="w-full h-auto object-contain cursor-pointer hover:opacity-90 transition-all"
+                      onClick={() => {
+                        setExpandedImages(prev => {
+                          const newSet = new Set(prev);
+                          if (newSet.has(post.id)) {
+                            newSet.delete(post.id);
+                          } else {
+                            newSet.add(post.id);
+                          }
+                          return newSet;
+                        });
+                      }}
                     />
                   </div>
                 )}
-                
+
                 {/* Post Text */}
-                <div className="whitespace-pre-wrap break-words">
+                <div className="flex-1 min-w-0 whitespace-pre-wrap break-words text-sm">
                   {post.comment.split('\n').map((line, i) => (
                     <p key={i} className={line.startsWith('>') ? 'text-green-600 dark:text-green-400' : ''}>
                       {line}
@@ -249,75 +294,85 @@ export default function ThreadPage() {
                 </div>
               </div>
             </div>
-          </Card>
+          </div>
         ))}
       </div>
 
+      {/* Update button above reply */}
+      <div className="mb-4">
+        <button
+          onClick={() => fetchThread()}
+          className="text-primary hover:underline text-sm flex items-center gap-1"
+        >
+          [Update]
+          {isRefreshing && <RefreshCw className="h-3 w-3 animate-spin" />}
+        </button>
+      </div>
+
       {address ? (
-        <Card className="p-6">
-          <h2 className="text-xl font-bold mb-4">Post Reply</h2>
-          <div className="space-y-4">
+        <Card className="p-4">
+          <h2 className="text-sm font-semibold mb-3">Reply</h2>
+          <div className="space-y-3">
             <Textarea
               placeholder="Write your reply..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              rows={6}
+              rows={4}
             />
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Image (optional)
-              </label>
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    setImageFile(file);
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                      setImagePreview(reader.result as string);
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                }}
-                className="cursor-pointer"
-              />
-              {imagePreview && (
-                <div className="mt-4">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="max-w-full max-h-64 rounded border"
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Input
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setImageFile(file);
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setImagePreview(reader.result as string);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="cursor-pointer w-auto text-xs"
+                />
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="anonymous-reply"
+                    checked={stayAnonymous}
+                    onCheckedChange={(checked) => handleAnonymousChange(checked as boolean)}
                   />
+                  <label
+                    htmlFor="anonymous-reply"
+                    className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Anonymous
+                  </label>
                 </div>
-              )}
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="anonymous-reply"
-                checked={stayAnonymous}
-                onCheckedChange={(checked) => handleAnonymousChange(checked as boolean)}
-              />
-              <label
-                htmlFor="anonymous-reply"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              </div>
+              <Button
+                onClick={createReply}
+                disabled={replying || !comment.trim()}
+                size="sm"
               >
-                Stay Anonymous
-              </label>
+                {replying ? "Posting..." : "Post"}
+              </Button>
             </div>
-            <Button
-              onClick={createReply}
-              disabled={replying || !comment.trim()}
-              className="w-full"
-            >
-              {replying ? "Posting..." : "Post Reply"}
-            </Button>
+            {imagePreview && (
+              <div className="mt-2">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="max-w-full max-h-32 rounded border"
+                />
+              </div>
+            )}
           </div>
         </Card>
       ) : (
-        <Card className="p-12 text-center">
-          <p className="text-muted-foreground">
+        <Card className="p-6 text-center">
+          <p className="text-sm text-muted-foreground">
             Connect your wallet to post a reply.
           </p>
         </Card>

@@ -8,6 +8,7 @@ import { PageNavigation } from "@/components/page-navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useUserStats } from "@/hooks/use-user-stats";
+import { useUserDiscord } from "@/hooks/use-user-discord";
 import { Address } from "viem";
 import { formatDistanceToNow } from "date-fns";
 
@@ -40,6 +41,7 @@ export default function Home() {
     address as Address,
     isConnected
   );
+  const { data: discordUser } = useUserDiscord(userStats?.discordId || "");
   const [trendingThreads, setTrendingThreads] = useState<Thread[]>([]);
   const [recentArticles, setRecentArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,14 +105,27 @@ export default function Home() {
           <Card className="p-6">
             {isConnected ? (
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary/10 rounded-lg">
-                  <User className="h-6 w-6 text-primary" />
-                </div>
+                {discordUser?.avatar_url ? (
+                  <img
+                    src={discordUser.avatar_url}
+                    alt="Profile"
+                    className="w-12 h-12 rounded-lg object-cover"
+                  />
+                ) : (
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    <User className="h-6 w-6 text-primary" />
+                  </div>
+                )}
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Connected Wallet</p>
                   <p className="font-mono text-sm font-semibold">
-                    {address?.slice(0, 6)}...{address?.slice(-4)}
+                    {discordUser?.username || userStats?.username || `${address?.slice(0, 6)}...${address?.slice(-4)}`}
                   </p>
+                  {discordUser?.username && (
+                    <p className="text-xs text-muted-foreground">
+                      {address?.slice(0, 6)}...{address?.slice(-4)}
+                    </p>
+                  )}
                 </div>
                 {!isUserStatsLoading && userStats && (
                   <div className="min-w-[300px]">
@@ -225,9 +240,9 @@ export default function Home() {
                       <div className="flex gap-3 p-3">
                         {thread.posts[0]?.imageHash && (
                           <div className="w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 p-2">
-                            <img 
-                              src={thread.posts[0].imageHash} 
-                              alt={thread.subject || 'Thread image'} 
+                            <img
+                              src={thread.posts[0].imageHash}
+                              alt={thread.subject || 'Thread image'}
                               className="w-full h-full object-cover rounded"
                             />
                           </div>
@@ -248,7 +263,7 @@ export default function Home() {
                               {thread.posts[0]?.comment || "No content"}
                             </p>
                             <div className="flex gap-2 items-center">
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-xs" style={{ color: '#3c688f' }}>
                                 /{thread.boardName}/
                               </Badge>
                               <span className="text-xs text-muted-foreground">

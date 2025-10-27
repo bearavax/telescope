@@ -217,73 +217,36 @@ export function ForumOverview() {
 
   return (
     <div className="space-y-6">
-      {/* Stats Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <Card className="p-2 bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-primary/10 rounded-lg">
-              <MessageSquare className="h-4 w-4 text-primary" />
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <p className="text-lg font-bold">{stats.totalBoards}</p>
-              <p className="text-xs text-muted-foreground">Total Boards</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-2 bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg" style={{ backgroundColor: '#3c688f15' }}>
-              <TrendingUp className="h-4 w-4" style={{ color: '#3c688f' }} />
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <p className="text-lg font-bold">{stats.totalThreads}</p>
-              <p className="text-xs text-muted-foreground">Total Threads</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-2 bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-green-500/10 rounded-lg">
-              <Users className="h-4 w-4 text-green-500" />
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <p className="text-lg font-bold">{activeUsers}</p>
-              <p className="text-xs text-muted-foreground">Active Now</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-2 bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg" style={{ backgroundColor: isConnected && earnedToday ? '#22c55e15' : '#52525b15' }}>
-              {isConnected && earnedToday ? (
-                <CheckCircle className="h-4 w-4 text-green-500" />
-              ) : (
-                <Clock className="h-4 w-4 text-zinc-400" />
-              )}
-            </div>
-            <div className="flex flex-col">
-              {isConnected ? (
-                <div className="flex items-baseline gap-1.5">
-                  <p className="text-xs font-semibold">{earnedToday ? 'XP Earned' : '1 XP Available'}</p>
-                </div>
-              ) : (
-                <div className="flex items-baseline gap-1.5">
-                  <p className="text-xs font-semibold">Daily XP Reset</p>
-                </div>
-              )}
-              <p className="text-xs text-muted-foreground font-mono">{timeUntilReset}</p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
       {/* Trending Threads */}
       <div>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
           <h2 className="text-xl font-bold flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
             Trending Threads
           </h2>
+          {/* XP Text Link - Inline with title on desktop, below on mobile */}
+          <div className="text-xs md:text-sm text-muted-foreground flex items-center gap-1.5">
+            {isConnected ? (
+              <>
+                {earnedToday ? (
+                  <CheckCircle className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
+                ) : (
+                  <Clock className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
+                )}
+                <span className="whitespace-nowrap">
+                  {earnedToday ? 'XP Earned Today' : '1 XP Available'}
+                </span>
+                <span className="hidden md:inline">·</span>
+                <span className="whitespace-nowrap">Resets in {timeUntilReset}</span>
+              </>
+            ) : (
+              <>
+                <Clock className="h-3.5 w-3.5 md:h-4 md:w-4 flex-shrink-0" />
+                <span className="whitespace-nowrap">Daily XP Reset:</span>
+                <span className="whitespace-nowrap">{timeUntilReset}</span>
+              </>
+            )}
+          </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {recentThreads.length > 0 ? (
@@ -554,6 +517,43 @@ export function ForumOverview() {
             </Card>
           </div>
         </div>
+      </div>
+
+      {/* Stats - Moved to Bottom */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-6">
+        <Card className="p-2 bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-primary/10 rounded-lg">
+              <MessageSquare className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-lg font-bold">{stats.totalBoards}</p>
+              <p className="text-xs text-muted-foreground">Total Boards</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-2 bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg" style={{ backgroundColor: '#3c688f15' }}>
+              <TrendingUp className="h-4 w-4" style={{ color: '#3c688f' }} />
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-lg font-bold">{stats.totalThreads}</p>
+              <p className="text-xs text-muted-foreground">Total Threads</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-2 bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-green-500/10 rounded-lg">
+              <Users className="h-4 w-4 text-green-500" />
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-lg font-bold">{activeUsers}</p>
+              <p className="text-xs text-muted-foreground">Active Now</p>
+            </div>
+          </div>
+        </Card>
       </div>
 
     </div>

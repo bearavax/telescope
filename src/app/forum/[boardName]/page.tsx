@@ -241,19 +241,19 @@ export default function BoardPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {threads.map((thread) => (
           <Link key={thread.id} href={`/forum/thread/${thread.id}`}>
-            <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-              <div className="p-3">
+            <div className="hover:opacity-80 transition-opacity cursor-pointer h-full">
+              <div className="p-3 bg-white rounded h-full flex flex-col">
                 {/* Thread Image */}
                 {thread.posts[0]?.imageHash && (
-                  <div className="w-full aspect-square overflow-hidden rounded bg-zinc-100 dark:bg-zinc-800 mb-2">
-                    <img 
-                      src={thread.posts[0].imageHash} 
-                      alt={thread.subject || 'Thread image'} 
+                  <div className="w-full aspect-square overflow-hidden rounded bg-zinc-100 mb-2">
+                    <img
+                      src={thread.posts[0].imageHash}
+                      alt={thread.subject || 'Thread image'}
                       className="w-full h-full object-cover"
                     />
                   </div>
                 )}
-                
+
                 {/* Thread Info */}
                 <div className="space-y-1">
                   <h3 className="font-semibold text-xs line-clamp-2 min-h-[2rem]">
@@ -267,7 +267,7 @@ export default function BoardPage() {
                   </div>
                 </div>
               </div>
-            </Card>
+            </div>
           </Link>
         ))}
       </div>
