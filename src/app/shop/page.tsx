@@ -1,16 +1,13 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useAccount } from "wagmi";
 import { Address } from "viem";
 import { PageNavigation } from "@/components/page-navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useUserStats } from "@/hooks/use-user-stats";
-import { useUserDiscord } from "@/hooks/use-user-discord";
-import { Trophy, Gift, Award, User } from "lucide-react";
+import { Gift } from "lucide-react";
 import Image from "next/image";
 
 interface Reward {
@@ -36,14 +33,13 @@ export default function ClaimPage() {
     address as Address,
     isConnected
   );
-  const { data: discordUser } = useUserDiscord(userStats?.discordId || "");
 
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState<string | null>(null);
   const lastFetchRef = useRef<{ address: string | undefined; data: Reward[] } | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const url = address && isConnected
@@ -52,7 +48,7 @@ export default function ClaimPage() {
       console.log("Fetching rewards from:", url);
       const rewardsRes = await fetch(url);
       const rewardsData = await rewardsRes.json();
-      console.log("Rewards data with hasClaimed:", rewardsData.map((r: any) => ({ name: r.name, hasClaimed: r.hasClaimed })));
+      console.log("Rewards data with hasClaimed:", rewardsData.map((r: Reward) => ({ name: r.name, hasClaimed: r.hasClaimed })));
 
       // Only update state if we're fetching with an address, OR if we don't have cached data with an address
       if (address && isConnected) {
@@ -76,7 +72,7 @@ export default function ClaimPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [address, isConnected, toast]);
 
   useEffect(() => {
     const fetchKey = `${isConnected}-${address || 'none'}`;
@@ -90,7 +86,7 @@ export default function ClaimPage() {
       console.log("Fetching without address (first load)");
       fetchData();
     }
-  }, [address, isConnected]);
+  }, [address, isConnected, fetchData]);
 
   const handleClaim = async (rewardId: string) => {
     if (!address) {
@@ -129,10 +125,10 @@ export default function ClaimPage() {
       // Refresh data
       await fetchData();
       await refetchUserStats();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Failed to claim reward",
         variant: "destructive",
       });
     } finally {
