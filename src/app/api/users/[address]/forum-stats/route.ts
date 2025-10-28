@@ -39,7 +39,7 @@ export async function GET(
       },
     });
 
-    // Get boards posted in
+    // Get boards posted in with post counts
     const boardsPostedIn = await prisma.post.findMany({
       where: { walletAddress: address },
       select: {
@@ -55,16 +55,28 @@ export async function GET(
           }
         }
       },
-      distinct: ['threadId'],
     });
 
-    const uniqueBoards = Array.from(
-      new Map(
-        boardsPostedIn
-          .filter(p => p.thread?.board)
-          .map(p => [p.thread.board.name, p.thread.board])
-      ).values()
-    );
+    // Count posts per board and sort by activity
+    const boardCountMap = new Map<string, { name: string; title: string; count: number }>();
+
+    boardsPostedIn
+      .filter(p => p.thread?.board)
+      .forEach(p => {
+        const boardName = p.thread.board.name;
+        if (boardCountMap.has(boardName)) {
+          boardCountMap.get(boardName)!.count++;
+        } else {
+          boardCountMap.set(boardName, {
+            name: p.thread.board.name,
+            title: p.thread.board.title,
+            count: 1,
+          });
+        }
+      });
+
+    const uniqueBoards = Array.from(boardCountMap.values())
+      .sort((a, b) => b.count - a.count); // Sort by post count descending
 
     // Check badge eligibility based on forum post order
     let isSuperOG = false;

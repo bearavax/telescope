@@ -135,43 +135,43 @@ export default function Home() {
           {/* User Profile / Connect Wallet */}
           <Card className="p-4 md:p-6">
             {isConnected ? (
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                {discordUser?.avatar_url ? (
-                  <img
-                    src={discordUser.avatar_url}
-                    alt="Profile"
-                    className="w-12 h-12 rounded-lg object-cover"
-                  />
-                ) : (
-                  <div className="p-3 bg-primary/10 rounded-lg">
-                    <User className="h-6 w-6 text-primary" />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Connected Wallet</p>
-                  <p className="font-mono text-sm font-semibold">
-                    {discordUser?.username || userStats?.username || `${address?.slice(0, 6)}...${address?.slice(-4)}`}
-                  </p>
-                  {discordUser?.username && (
-                    <p className="text-xs text-muted-foreground">
-                      {address?.slice(0, 6)}...{address?.slice(-4)}
-                    </p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
+                <div className="flex items-center gap-4">
+                  {discordUser?.avatar_url ? (
+                    <img
+                      src={discordUser.avatar_url}
+                      alt="Profile"
+                      className="w-12 h-12 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div className="p-3 bg-primary/10 rounded-lg">
+                      <User className="h-6 w-6 text-primary" />
+                    </div>
                   )}
+                  <div>
+                    <p className="text-sm text-muted-foreground">Connected Wallet</p>
+                    <p className="font-mono text-sm font-semibold">
+                      {discordUser?.username || userStats?.username || `${address?.slice(0, 6)}...${address?.slice(-4)}`}
+                    </p>
+                    {discordUser?.username && (
+                      <p className="text-xs text-muted-foreground">
+                        {address?.slice(0, 6)}...{address?.slice(-4)}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 {!isUserStatsLoading && userStats && (
-                  <div className="w-full sm:w-auto sm:min-w-[280px] sm:max-w-[320px]">
-                    <div className="flex items-center justify-between text-xs sm:text-sm mb-1">
-                      <span className="font-semibold">Level {userStats.level || 1}</span>
-                      <span className="text-muted-foreground text-xs">
-                        {userStats.xp || 0} XP • {userStats.xpForNextLevel || 21} XP next
+                  <div className="flex flex-col gap-2 min-w-[280px]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold">Level {userStats.level || 1}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {userStats.progress.currentProgress} XP • {userStats.xpForNextLevel} XP next
                       </span>
                     </div>
-                    <div className="w-full bg-zinc-200 rounded-full h-2">
+                    <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2">
                       <div
                         className="bg-blue-500 h-2 rounded-full transition-all"
-                        style={{
-                          width: `${((userStats.progress?.currentProgress || 0) / (userStats.progress?.totalNeeded || 21)) * 100}%`
-                        }}
+                        style={{ width: `${Math.min(100, (userStats.progress.currentProgress / userStats.progress.totalNeeded) * 100)}%` }}
                       />
                     </div>
                   </div>
@@ -372,10 +372,10 @@ export default function Home() {
                               {thread.posts[0]?.comment || "No content"}
                             </p>
                             <div className="flex gap-2 items-center">
-                              <Badge variant="outline" className="text-xs" style={{ color: '#3c688f' }}>
+                              <Badge variant="outline" className="text-xs border-zinc-300 dark:border-zinc-700" style={{ color: '#3c688f' }}>
                                 /{thread.boardName}/
                               </Badge>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-xs text-white dark:text-zinc-400">
                                 {thread.replyCount} replies
                               </span>
                             </div>

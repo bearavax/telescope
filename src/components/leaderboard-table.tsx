@@ -84,50 +84,19 @@ export const LeaderboardTable = React.memo(
           ? Array.from({ length: skeletonCount }).map((_, index) => (
               <div
                 key={index}
-                className="flex items-center gap-4 rounded-lg bg-white dark:bg-zinc-800 p-4 shadow animate-pulse"
-              >
-                <div className="text-sm font-medium text-zinc-500 dark:text-zinc-200 w-10 h-4 bg-zinc-300 dark:bg-zinc-700 rounded"></div>
-
-                <div className="h-10 w-10 bg-zinc-300 dark:bg-zinc-700 rounded-full"></div>
-
-                <div className="flex min-w-[300px] max-w-[300px] flex-col space-y-2">
-                  <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-3/4"></div>
-                  <div className="h-3 bg-zinc-200 dark:bg-zinc-600 rounded w-1/2"></div>
-                  {showSocial && (
-                    <div className="mt-1 flex space-x-2">
-                      <div className="h-4 w-4 bg-zinc-300 dark:bg-zinc-700 rounded"></div>
-                      <div className="h-4 w-4 bg-zinc-300 dark:bg-zinc-700 rounded"></div>
-                      <div className="h-4 w-4 bg-zinc-300 dark:bg-zinc-700 rounded"></div>
-                      <div className="h-4 w-4 bg-zinc-300 dark:bg-zinc-700 rounded"></div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex flex-1 items-center justify-end gap-4">
-                  <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/4"></div>
-                  <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/4"></div>
-                </div>
-              </div>
+                className="h-20 rounded-lg bg-zinc-100 dark:bg-zinc-800 animate-pulse"
+              />
             ))
           : currentItems.map((item) => (
               <div
                 key={item.id}
-                className={`flex flex-col md:flex-row items-center gap-4 rounded-lg dark:bg-zinc-800 pl-4 pr-4 md:pr-8 py-4 shadow transition-all hover:shadow-md border ${
+                className={`flex flex-col md:flex-row items-center gap-4 rounded-lg pl-4 pr-4 md:pr-8 py-4 shadow transition-all hover:shadow-md ${
                   item.rank === 1
-                    ? "border-yellow-400"
+                    ? "bg-[#fff0c3] dark:bg-zinc-800"
                     : item.rank === 2
-                    ? "border-gray-300"
+                    ? "bg-[#f0f0f0] dark:bg-zinc-800"
                     : item.rank === 3
-                    ? "border-amber-600"
-                    : "border-zinc-200 dark:border-zinc-700"
-                }
-                ${
-                  item.rank === 1
-                    ? "bg-[#fff0c3] dark:bg-yellow-900/30"
-                    : item.rank === 2
-                    ? "bg-[#f0f0f0] dark:bg-gray-700/30"
-                    : item.rank === 3
-                    ? "bg-[#f8e1c4] dark:bg-amber-900/30"
+                    ? "bg-[#f8e1c4] dark:bg-zinc-800"
                     : "bg-white dark:bg-zinc-800"
                 }`}
               >
@@ -145,17 +114,9 @@ export const LeaderboardTable = React.memo(
                       </div>
 
                       <Avatar
-                        className={`h-10 w-10 border-2 ${
-                          item.rank === 1
-                            ? "border-yellow-400"
-                            : item.rank === 2
-                            ? "border-gray-300"
-                            : item.rank === 3
-                            ? "border-amber-600"
-                            : "border-zinc-200 dark:border-zinc-700"
-                        }`}
+                        className="h-10 w-10"
                       >
-                        <AvatarImage src={item.avatar} alt={item.name} />
+                        <AvatarImage src={item.avatar} alt={item.name} className="object-cover" />
                         <AvatarFallback>
                           {item.name.substring(0, 2)}
                         </AvatarFallback>
@@ -192,11 +153,7 @@ export const LeaderboardTable = React.memo(
                               rel="noopener noreferrer"
                             >
                               <Globe
-                                className={`h-4 w-4 ${
-                                  [1, 2, 3].includes(item.rank)
-                                    ? "text-zinc-700 hover:text-green-400"
-                                    : "text-zinc-400 hover:text-green-400"
-                                }`}
+                                className="h-4 w-4 text-zinc-500 dark:text-zinc-400 hover:text-green-400"
                               />
                             </a>
                           )}
@@ -207,11 +164,7 @@ export const LeaderboardTable = React.memo(
                               rel="noopener noreferrer"
                             >
                               <XIcon
-                                className={`w-[0.85rem] h-4 ${
-                                  [1, 2, 3].includes(item.rank)
-                                    ? "fill-zinc-700 hover:fill-blue-400"
-                                    : "fill-zinc-500 hover:fill-blue-400"
-                                }`}
+                                className="w-[0.85rem] h-4 fill-zinc-500 dark:fill-zinc-400 hover:fill-blue-400"
                               />
                             </a>
                           )}
@@ -223,11 +176,7 @@ export const LeaderboardTable = React.memo(
                               className=""
                             >
                               <TelegramIcon
-                                className={`h-4 w-4 ${
-                                  [1, 2, 3].includes(item.rank)
-                                    ? "fill-zinc-700 hover:fill-blue-400"
-                                    : "fill-zinc-400 hover:fill-blue-400"
-                                }`}
+                                className="h-4 w-4 fill-zinc-500 dark:fill-zinc-400 hover:fill-blue-400"
                               />
                             </a>
                           )}
@@ -238,11 +187,7 @@ export const LeaderboardTable = React.memo(
                               rel="noopener noreferrer"
                             >
                               <DiscordIcon
-                                className={`h-4 w-4 ${
-                                  [1, 2, 3].includes(item.rank)
-                                    ? "fill-zinc-700 dark:fill-zinc-300 hover:fill-indigo-400 dark:hover:fill-indigo-400"
-                                    : "fill-zinc-400 dark:fill-zinc-500 hover:fill-indigo-400 dark:hover:fill-indigo-400"
-                                }`}
+                                className="h-4 w-4 fill-zinc-500 dark:fill-zinc-400 hover:fill-indigo-400 dark:hover:fill-indigo-400"
                               />
                             </a>
                           )}

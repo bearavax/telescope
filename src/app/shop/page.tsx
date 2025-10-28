@@ -158,17 +158,17 @@ export default function ClaimPage() {
               ) : rewards.length > 0 ? (
                 rewards.map((reward) => (
                   <div key={reward.id} className="relative">
-                    <div className="snow-button-card bg-white dark:bg-zinc-900 rounded-lg shadow-lg hover:shadow-xl transition-all overflow-hidden">
+                    <div className="snow-button-card bg-zinc-100 dark:bg-zinc-800 rounded-lg shadow-lg hover:shadow-xl transition-all overflow-hidden">
                       <div className="flex flex-col md:flex-row gap-6 p-6">
                         {/* Image Section */}
-                        <div className="flex-shrink-0 w-full md:w-48 h-48 bg-gradient-to-br from-zinc-50 to-zinc-100 rounded-lg flex items-center justify-center p-4">
+                        <div className="flex-shrink-0 w-full md:w-48 h-48 rounded-lg overflow-hidden">
                           {reward.imageUrl && (
                             <Image
                               src={reward.imageUrl}
                               alt={reward.name}
-                              width={160}
-                              height={160}
-                              className="object-contain drop-shadow-2xl"
+                              width={192}
+                              height={192}
+                              className="object-cover w-full h-full"
                             />
                           )}
                         </div>

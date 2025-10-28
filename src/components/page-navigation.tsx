@@ -4,6 +4,14 @@ import Link from "next/link";
 import { Home as HomeIcon, Calendar, Monitor, Library, Palette, Newspaper, Gift } from "lucide-react";
 import { usePathname } from "next/navigation";
 
+// Play random shop sound
+const playShopSound = () => {
+  const soundIndex = Math.floor(Math.random() * 5) + 1;
+  const audio = new Audio(`/sounds/UI_TradingPost_OpenMenu_0${soundIndex}.ogg`);
+  audio.volume = 0.5;
+  audio.play().catch(() => {}); // Ignore errors if autoplay is blocked
+};
+
 export function PageNavigation() {
   const pathname = usePathname();
 
@@ -89,7 +97,7 @@ export function PageNavigation() {
             </span>
           </button>
         </Link>
-        <Link href="/shop">
+        <Link href="/shop" onClick={playShopSound}>
           <button
             className={`group py-2.5 sm:py-3 font-bold text-md border-2 rounded-xl transition-all duration-500 ease-in-out flex items-center overflow-hidden ${
               pathname?.startsWith("/shop")

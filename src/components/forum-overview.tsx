@@ -256,7 +256,7 @@ export function ForumOverview() {
           {recentThreads.length > 0 ? (
             recentThreads.slice(0, 3).map((thread) => (
               <Link key={thread.id} href={`/forum/thread/${thread.id}`}>
-                <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full bg-white dark:bg-zinc-900">
+                <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
                   <div className="flex gap-3 p-3">
                     {thread.posts[0]?.imageHash && (
                       <div className="w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
@@ -283,10 +283,10 @@ export function ForumOverview() {
                           {thread.posts[0]?.comment || "No content"}
                         </p>
                         <div className="flex gap-2 items-center">
-                          <Badge variant="outline" className="text-xs" style={{ color: '#3c688f' }}>
+                          <Badge variant="outline" className="text-xs border-zinc-300 dark:border-zinc-700" style={{ color: '#3c688f' }}>
                             /{thread.boardName}/
                           </Badge>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-white dark:text-zinc-400">
                             {thread.replyCount} replies
                           </span>
                         </div>
@@ -527,8 +527,8 @@ export function ForumOverview() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-6">
         <Card className="p-2 bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-primary/10 rounded-lg">
-              <MessageSquare className="h-4 w-4 text-primary" />
+            <div className="p-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+              <MessageSquare className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
             </div>
             <div className="flex items-baseline gap-1.5">
               <p className="text-lg font-bold">{stats.totalBoards}</p>
@@ -538,8 +538,8 @@ export function ForumOverview() {
         </Card>
         <Card className="p-2 bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg" style={{ backgroundColor: '#3c688f15' }}>
-              <TrendingUp className="h-4 w-4" style={{ color: '#3c688f' }} />
+            <div className="p-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+              <TrendingUp className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
             </div>
             <div className="flex items-baseline gap-1.5">
               <p className="text-lg font-bold">{stats.totalThreads}</p>
@@ -549,8 +549,8 @@ export function ForumOverview() {
         </Card>
         <Card className="p-2 bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-green-500/10 rounded-lg">
-              <Users className="h-4 w-4 text-green-500" />
+            <div className="p-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+              <Users className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
             </div>
             <div className="flex items-baseline gap-1.5">
               <p className="text-lg font-bold">{activeUsers}</p>

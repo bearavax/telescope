@@ -63,7 +63,6 @@ export const Categories = () => {
 
   const handleCategoryClick = (category: string) => {
     const params = new URLSearchParams(searchParams);
-    const currentTab = window.location.hash.replace('#', '') || 'projects';
 
     if (category === selectedCategory) {
       params.delete("tag");
@@ -71,8 +70,9 @@ export const Categories = () => {
       params.set("tag", category);
     }
 
-    // Update the URL based on current tab
-    router.replace(`/?${params.toString()}#${currentTab}`, { scroll: false });
+    // Update the URL with projects path
+    const queryString = params.toString();
+    router.replace(`/projects${queryString ? `?${queryString}` : ''}`, { scroll: false });
   };
 
   const visibleCategories =

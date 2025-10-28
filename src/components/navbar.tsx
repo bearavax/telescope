@@ -15,6 +15,14 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useUserStats } from "@/hooks/use-user-stats";
 
+// Play random shop sound
+const playShopSound = () => {
+  const soundIndex = Math.floor(Math.random() * 5) + 1;
+  const audio = new Audio(`/sounds/UI_TradingPost_OpenMenu_0${soundIndex}.ogg`);
+  audio.volume = 0.5;
+  audio.play().catch(() => {}); // Ignore errors if autoplay is blocked
+};
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { address, isConnected } = useAccount();
@@ -36,10 +44,15 @@ export function Navbar() {
         />
         <div className="flex items-center relative z-10 justify-center gap-2 md:self-auto">
           {isConnected && userStats && (
-            <div className="hidden md:flex items-center gap-1.5 bg-white dark:bg-zinc-800 rounded-lg px-3 py-2 h-9 shadow">
-              <CircleDollarSign className="h-4 w-4 text-yellow-600" />
-              <span className="font-bold text-sm">{userStats.coins || 0}</span>
-            </div>
+            <Link
+              href="/shop"
+              onClick={playShopSound}
+            >
+              <div className="hidden md:flex items-center gap-1.5 bg-white dark:bg-zinc-800 rounded-lg px-3 py-2 h-9 shadow cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
+                <CircleDollarSign className="h-4 w-4 text-yellow-600" />
+                <span className="font-bold text-sm text-yellow-600">{userStats.coins || 0}</span>
+              </div>
+            </Link>
           )}
           <DonateModal />
           <FAQ />

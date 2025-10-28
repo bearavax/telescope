@@ -13,6 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ConnectDiscordAlert } from "@/components/connect-discord-alert";
+import { useAccount } from "wagmi";
+import { useUserStats } from "@/hooks/use-user-stats";
+import { Address } from "viem";
 
 interface DiscordEvent {
   id: string;
@@ -28,6 +32,12 @@ interface DiscordEvent {
 }
 
 export default function CalendarPage() {
+  const { address, isConnected } = useAccount();
+  const { data: userStats, isLoading: isUserStatsLoading } = useUserStats(
+    address as Address,
+    isConnected
+  );
+
   const [events, setEvents] = useState<DiscordEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -44,16 +54,40 @@ export default function CalendarPage() {
   const fetchDiscordEvents = useCallback(async () => {
     try {
       setLoading(true);
+      console.log("📡 Fetching Discord events from API...");
       const response = await fetch('/api/discord/events', {
         // Add cache control for faster subsequent loads
         next: { revalidate: 300 } // Cache for 5 minutes
       });
+
+      if (!response.ok) {
+        console.error("❌ API response not OK:", response.status, response.statusText);
+        throw new Error(`API returned ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log("📊 API Response:", {
+        guildsCount: data.guildsCount,
+        eventsCount: data.events?.length || 0,
+        firstEvent: data.events?.[0]?.guildName
+      });
+
       if (data.events) {
         setEvents(data.events);
+        console.log(`✅ Loaded ${data.events.length} events from ${data.guildsCount} guilds`);
+
+        // Log guild breakdown
+        const guildBreakdown = data.events.reduce((acc: any, event: DiscordEvent) => {
+          acc[event.guildName] = (acc[event.guildName] || 0) + 1;
+          return acc;
+        }, {});
+        console.log("🏰 Events per guild:", guildBreakdown);
+      } else {
+        console.warn("⚠️ No events array in response");
       }
     } catch (error) {
-      console.error("Error fetching Discord events:", error);
+      console.error("❌ Error fetching Discord events:", error);
+      console.error("Stack:", error instanceof Error ? error.stack : "No stack trace");
     } finally {
       setLoading(false);
     }
@@ -159,6 +193,12 @@ export default function CalendarPage() {
     <div className="w-full">
         <div className="w-full max-w-screen-lg mx-auto -mt-6 px-8 relative z-10 mb-4">
           <PageNavigation />
+
+          {isConnected && !isUserStatsLoading && !userStats?.discordId && (
+            <div className="mb-6">
+              <ConnectDiscordAlert />
+            </div>
+          )}
         </div>
 
       <div className="w-full max-w-screen-lg mx-auto px-8 pb-8">
@@ -449,16 +489,13 @@ export default function CalendarPage() {
 
 
 
-        {events.length === 0 && (
+        {events.length === 0 && !loading && (
           <Card className="p-12 text-center">
             <CalendarIcon className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-2">No Events Found</h2>
             <p className="text-muted-foreground mb-6">
-              Events from all servers where the Telescope bot is installed will appear here.
+              No upcoming events at this time. Check back later!
             </p>
-            <Button onClick={() => window.location.href = '/calendar/invite-bot'}>
-              Invite Bot to Servers
-            </Button>
           </Card>
         )}
 
