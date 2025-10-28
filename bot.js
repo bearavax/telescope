@@ -11,7 +11,6 @@ const client = new Client({
 async function checkUpcomingEvents() {
   console.log('\n🔍 Checking for upcoming events...');
   const now = new Date();
-  const in24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
   let totalEvents = 0;
 
@@ -20,7 +19,7 @@ async function checkUpcomingEvents() {
       const events = await guild.scheduledEvents.fetch();
       const upcomingEvents = events.filter(event => {
         const startTime = new Date(event.scheduledStartAt);
-        return startTime >= now && startTime <= in24Hours;
+        return startTime >= now;
       });
 
       if (upcomingEvents.size > 0) {
@@ -41,14 +40,14 @@ async function checkUpcomingEvents() {
   }
 
   if (totalEvents === 0) {
-    console.log('   No upcoming events in the next 24 hours');
+    console.log('   No upcoming events found');
   } else {
     console.log('\n✅ Found ' + totalEvents + ' upcoming event(s)');
   }
 }
 
 client.once(Events.ClientReady, (readyClient) => {
-  console.log('\n✅ Discord Bot is now ONLINE!');
+  console.log('\n✅ Discord Bot is now ONLINE\!');
   console.log('🤖 Logged in as: ' + readyClient.user.tag);
   console.log('📊 Bot ID: ' + readyClient.user.id);
   console.log('🏠 In ' + readyClient.guilds.cache.size + ' servers\n');
@@ -62,8 +61,8 @@ client.once(Events.ClientReady, (readyClient) => {
 
   checkUpcomingEvents();
 
-  setInterval(checkUpcomingEvents, 60 * 60 * 1000);
-  console.log('⏰ Hourly event check scheduled\n');
+  setInterval(checkUpcomingEvents, 60 * 1000);
+  console.log('⏰ Event check scheduled every 1 minute\n');
 });
 
 client.on(Events.GuildScheduledEventCreate, (event) => {
