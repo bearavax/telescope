@@ -10,17 +10,26 @@ import {
   CredenzaTitle,
   CredenzaTrigger,
 } from "@/components/ui/credenza";
-import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, usePrepareTransactionRequest, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { parseEther } from "viem";
 import { useToast } from "@/hooks/use-toast";
+import { avalanche } from "wagmi/chains";
 
 const DONATION_ADDRESS = "0x0C39f0970CF3118Fd004A3f069E59dabc6714980";
 
 export function DonateModal() {
   const [amount, setAmount] = useState("");
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const { toast } = useToast();
-  
+  const chainId = avalanche.id;
+
+  const { data: donateRequest } = usePrepareTransactionRequest({
+    chainId: chainId,
+    account: address,
+    to: DONATION_ADDRESS as `0x${string}`,
+    value: amount && parseFloat(amount) > 0 ? parseEther(amount) : BigInt(0)
+  });
+
   const { data: hash, sendTransaction, isPending, reset } = useSendTransaction();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
@@ -31,6 +40,7 @@ export function DonateModal() {
       toast({
         title: "Donation sent!",
         description: `Thank you for supporting with ${amount} AVAX`,
+        txHash: hash
       });
       setAmount("");
       reset();
@@ -47,11 +57,17 @@ export function DonateModal() {
       return;
     }
 
-    try {
-      sendTransaction({
-        to: DONATION_ADDRESS as `0x${string}`,
-        value: parseEther(amount),
+    if (!donateRequest) {
+      toast({
+        title: "Transaction preparation failed",
+        description: "Unable to prepare donation. Please try again.",
+        variant: "destructive",
       });
+      return;
+    }
+
+    try {
+      sendTransaction(donateRequest);
     } catch (error) {
       console.error("Donation error:", error);
       toast({

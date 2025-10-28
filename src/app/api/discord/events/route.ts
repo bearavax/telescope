@@ -82,7 +82,7 @@ export async function GET() {
       try {
         console.log(`📅 Fetching events from ${guild.name}...`);
         const eventsResponse = await fetch(
-          `${DISCORD_API_URL}/guilds/${guild.id}/scheduled-events`,
+          `${DISCORD_API_URL}/guilds/${guild.id}/scheduled-events?with_user_count=true`,
           {
             headers: {
               Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
