@@ -187,7 +187,7 @@ export default function CalendarPage() {
                     {/* Column 1: Icon & Title (4 cols) */}
                     <div className="md:col-span-4 flex items-center gap-3">
                       {event.guildIcon && (
-                        <img loading="lazy" src={event.guildIcon} alt="" loading="lazy" className="w-12 h-12 rounded-lg shadow-md flex-shrink-0" />
+                        <img loading="lazy" src={event.guildIcon} alt="" className="w-12 h-12 rounded-lg shadow-md flex-shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="font-bold text-sm mb-1 line-clamp-2">{event.name}</div>
