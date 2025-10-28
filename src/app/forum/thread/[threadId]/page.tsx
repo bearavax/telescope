@@ -167,7 +167,7 @@ export default function ThreadPage() {
 
   if (loading) {
     return (
-      <div className="w-full max-w-screen-lg mx-auto px-8 py-16">
+      <div className="w-full max-w-screen-lg mx-auto px-4 md:px-8 py-16">
         <div className="h-12 w-48 bg-zinc-100 dark:bg-zinc-800 animate-pulse rounded mb-8" />
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
@@ -180,8 +180,8 @@ export default function ThreadPage() {
 
   if (!thread) {
     return (
-      <div className="w-full max-w-screen-lg mx-auto px-8 py-16">
-        <Card className="p-12 text-center">
+      <div className="w-full max-w-screen-lg mx-auto px-4 md:px-8 py-16">
+        <Card className="p-6 md:p-12 text-center">
           <p className="text-muted-foreground">Thread not found.</p>
           <Link href="/forum" className="text-primary hover:underline mt-4 inline-block">
             Back to forum
@@ -318,9 +318,10 @@ export default function ThreadPage() {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={4}
+              className="text-base"
             />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
                 <Input
                   type="file"
                   accept="image/*,video/*"
@@ -335,7 +336,7 @@ export default function ThreadPage() {
                       reader.readAsDataURL(file);
                     }
                   }}
-                  className="cursor-pointer w-auto text-xs"
+                  className="cursor-pointer w-full sm:w-auto text-xs"
                 />
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -345,7 +346,7 @@ export default function ThreadPage() {
                   />
                   <label
                     htmlFor="anonymous-reply"
-                    className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
                     Anonymous
                   </label>
@@ -355,6 +356,7 @@ export default function ThreadPage() {
                 onClick={createReply}
                 disabled={replying || !comment.trim()}
                 size="sm"
+                className="w-full sm:w-auto"
               >
                 {replying ? "Posting..." : "Post"}
               </Button>

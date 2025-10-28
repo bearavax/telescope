@@ -128,7 +128,7 @@ export default function BoardPage() {
 
   if (loading) {
     return (
-      <div className="w-full max-w-screen-lg mx-auto px-8 py-16">
+      <div className="w-full max-w-screen-lg mx-auto px-4 md:px-8 py-16">
         <div className="h-12 w-48 bg-zinc-100 dark:bg-zinc-800 animate-pulse rounded mb-8" />
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
@@ -141,10 +141,10 @@ export default function BoardPage() {
 
   return (
     <div className="w-full">
-      <div className="w-full max-w-screen-lg mx-auto -mt-6 px-8 relative z-10 mb-4">
+      <div className="w-full max-w-screen-lg mx-auto -mt-6 px-4 md:px-8 relative z-10 mb-4">
         <PageNavigation />
       </div>
-      <div className="w-full max-w-screen-lg mx-auto px-8 pb-16">
+      <div className="w-full max-w-screen-lg mx-auto px-4 md:px-8 pb-16">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
           <Link href="/" className="hover:text-primary">Home</Link>
           <span>›</span>
@@ -152,12 +152,12 @@ export default function BoardPage() {
           <span>›</span>
           <span className="text-foreground font-medium">/{boardName}/</span>
         </div>
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-8">
           <div>
-            <h1 className="text-4xl font-bold" style={{ color: '#3c688f' }}>/{boardName}/</h1>
+            <h1 className="text-2xl md:text-4xl font-bold" style={{ color: '#3c688f' }}>/{boardName}/</h1>
           </div>
         {isConnected && (
-          <Button onClick={() => setShowNewThread(!showNewThread)}>
+          <Button onClick={() => setShowNewThread(!showNewThread)} className="w-full sm:w-auto">
             {showNewThread ? "Cancel" : "New Thread"}
           </Button>
         )}
@@ -169,20 +169,22 @@ export default function BoardPage() {
       </div>
 
       {showNewThread && (
-        <Card className="p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">Create New Thread</h2>
+        <Card className="p-4 md:p-6 mb-8">
+          <h2 className="text-lg md:text-xl font-bold mb-4">Create New Thread</h2>
           <div className="space-y-4">
             <Input
               placeholder="Subject (optional)"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               maxLength={100}
+              className="text-base"
             />
             <Textarea
               placeholder="Write your post..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={6}
+              className="text-base"
             />
             <div>
               <label className="block text-sm font-medium mb-2">
