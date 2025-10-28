@@ -105,7 +105,7 @@ export default function ProjectsPage() {
               <TabsTrigger
                 value="season3"
                 disabled
-                className="px-4 py-2 font-bold text-sm bg-white border-white border-2 opacity-50 cursor-not-allowed"
+                className="px-4 py-2 font-bold text-sm bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 border-2 opacity-50 cursor-not-allowed"
               >
                 Season 3
               </TabsTrigger>
@@ -116,7 +116,7 @@ export default function ProjectsPage() {
             <div className="relative group">
               <TabsTrigger
                 value="current"
-                className="px-4 py-2 font-bold text-sm bg-white border-white border-2"
+                className="px-4 py-2 font-bold text-sm bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 border-2"
               >
                 Season 2
               </TabsTrigger>
@@ -127,7 +127,7 @@ export default function ProjectsPage() {
             <div className="relative group">
               <TabsTrigger
                 value="season1"
-                className="px-4 py-2 font-bold text-sm bg-white border-white border-2"
+                className="px-4 py-2 font-bold text-sm bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 border-2"
               >
                 Season 1
               </TabsTrigger>

@@ -88,6 +88,11 @@ const INITIAL_BOARDS = [
     description: "Arriving to Avalanche"
   },
   {
+    name: "avax_art",
+    title: "Post Your AVAX Artwork",
+    description: "hi ava artists, let's see your work! include salvor link if it's a collection"
+  },
+  {
     name: "b",
     title: "Random",
     description: "Off-topic and random discussion"

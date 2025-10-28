@@ -5,6 +5,11 @@ import { env } from "@/env";
 
 const DISCORD_API_URL = "https://discord.com/api/v10";
 
+// In-memory cache
+let cachedEvents: any = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
 interface DiscordGuild {
   id: string;
   name: string;
@@ -45,6 +50,13 @@ export async function GET() {
   console.log("⏰ Timestamp:", new Date().toISOString());
 
   try {
+    // Check cache first
+    const now = Date.now();
+    if (cachedEvents && (now - cacheTimestamp) < CACHE_DURATION) {
+      console.log("✅ Returning cached events (age: " + Math.round((now - cacheTimestamp) / 1000) + "s)");
+      return NextResponse.json(cachedEvents);
+    }
+    console.log("🔄 Cache miss or expired, fetching fresh data...");
     // Get the current session (optional for this endpoint now)
     const session = await getServerSession(authOptions);
     console.log("🎮 Session data:", {
@@ -184,13 +196,21 @@ export async function GET() {
         guildInvite: guildInvites.get(event.guild_id),
         creator: event.creator,
         location: event.entity_metadata?.location,
+        userCount: event.user_count,
       };
     });
 
-    return NextResponse.json({
+    const response = {
       events: transformedEvents,
       guildsCount: botGuilds.length,
-    });
+    };
+
+    // Update cache
+    cachedEvents = response;
+    cacheTimestamp = Date.now();
+    console.log("💾 Events cached successfully");
+
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error("\n❌ ERROR IN DISCORD EVENTS API:", {

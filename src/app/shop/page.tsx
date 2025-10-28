@@ -138,7 +138,7 @@ export default function ClaimPage() {
 
   return (
     <div className="w-full">
-      <div className="w-full max-w-screen-lg mx-auto -mt-6 px-4 md:px-8 relative z-10 mb-8 md:mb-16">
+      <div className="w-full max-w-screen-lg mx-auto -mt-6 px-4 md:px-8 relative z-10 mb-16 md:mb-24 pb-8">
         <PageNavigation />
 
         <div className="space-y-6">
@@ -152,13 +152,13 @@ export default function ClaimPage() {
               {loading ? (
                 <>
                   {[1, 2].map((i) => (
-                    <div key={i} className="h-48 bg-zinc-100 animate-pulse rounded-lg" />
+                    <div key={i} className="h-48 bg-zinc-100 dark:bg-zinc-800 animate-pulse rounded-lg" />
                   ))}
                 </>
               ) : rewards.length > 0 ? (
                 rewards.map((reward) => (
                   <div key={reward.id} className="relative">
-                    <div className="snow-button-card bg-white rounded-lg shadow-lg hover:shadow-xl transition-all overflow-hidden">
+                    <div className="snow-button-card bg-white dark:bg-zinc-900 rounded-lg shadow-lg hover:shadow-xl transition-all overflow-hidden">
                       <div className="flex flex-col md:flex-row gap-6 p-6">
                         {/* Image Section */}
                         <div className="flex-shrink-0 w-full md:w-48 h-48 bg-gradient-to-br from-zinc-50 to-zinc-100 rounded-lg flex items-center justify-center p-4">

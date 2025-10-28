@@ -123,11 +123,11 @@ export const LeaderboardTable = React.memo(
                 }
                 ${
                   item.rank === 1
-                    ? "bg-[#fff0c3]"
+                    ? "bg-[#fff0c3] dark:bg-yellow-900/30"
                     : item.rank === 2
-                    ? "bg-[#f0f0f0]"
+                    ? "bg-[#f0f0f0] dark:bg-gray-700/30"
                     : item.rank === 3
-                    ? "bg-[#f8e1c4]"
+                    ? "bg-[#f8e1c4] dark:bg-amber-900/30"
                     : "bg-white dark:bg-zinc-800"
                 }`}
               >
@@ -166,7 +166,7 @@ export const LeaderboardTable = React.memo(
                       <div
                         className={`font-bold ${
                           [1, 2, 3].includes(item.rank)
-                            ? "text-zinc-800"
+                            ? "text-zinc-800 dark:text-zinc-200"
                             : "text-zinc-800 dark:text-zinc-200"
                         }`}
                       >
@@ -174,10 +174,10 @@ export const LeaderboardTable = React.memo(
                       </div>
                       {item.description && (
                         <div
-                          className={`text-sm truncate dark:text-zinc-400 hidden md:flex ${
+                          className={`text-sm truncate hidden md:flex ${
                             [1, 2, 3].includes(item.rank)
-                              ? "text-zinc-700"
-                              : "text-zinc-500"
+                              ? "text-zinc-700 dark:text-zinc-400"
+                              : "text-zinc-500 dark:text-zinc-400"
                           }`}
                         >
                           {item.description}
@@ -240,8 +240,8 @@ export const LeaderboardTable = React.memo(
                               <DiscordIcon
                                 className={`h-4 w-4 ${
                                   [1, 2, 3].includes(item.rank)
-                                    ? "fill-zinc-700 hover:fill-indigo-400"
-                                    : "fill-zinc-400 hover:fill-indigo-400"
+                                    ? "fill-zinc-700 dark:fill-zinc-300 hover:fill-indigo-400 dark:hover:fill-indigo-400"
+                                    : "fill-zinc-400 dark:fill-zinc-500 hover:fill-indigo-400 dark:hover:fill-indigo-400"
                                 }`}
                               />
                             </a>

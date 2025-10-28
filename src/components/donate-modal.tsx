@@ -83,7 +83,7 @@ export function DonateModal() {
   return (
     <Credenza>
       <CredenzaTrigger asChild>
-        <button className="flex items-center gap-2 bg-white rounded-lg px-4 py-2 h-9 shadow hover:bg-zinc-50 transition-colors">
+        <button className="flex items-center gap-2 bg-white dark:bg-zinc-800 rounded-lg px-4 py-2 h-9 shadow hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
           <Coffee className="h-4 w-4" />
         </button>
       </CredenzaTrigger>
@@ -95,16 +95,16 @@ export function DonateModal() {
           <div className="space-y-4">
             {isConnected ? (
               <>
-                <div className="text-sm text-zinc-600">
+                <div className="text-sm text-zinc-600 dark:text-zinc-300">
                   Send AVAX to support the continued development of Telescope
                 </div>
-                
-                <div className="bg-zinc-50 rounded-lg p-3 text-xs font-mono text-zinc-600 break-all">
+
+                <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-3 text-xs font-mono text-zinc-600 dark:text-zinc-300 break-all">
                   {DONATION_ADDRESS}
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-zinc-700 block mb-2">
+                  <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 block mb-2">
                     Amount (AVAX)
                   </label>
                   <input
@@ -114,7 +114,7 @@ export function DonateModal() {
                     placeholder="0.0"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
                   />
                 </div>
 
@@ -123,7 +123,7 @@ export function DonateModal() {
                     <button
                       key={preset}
                       onClick={() => setAmount(preset)}
-                      className="flex-1 px-3 py-1.5 text-sm bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors"
+                      className="flex-1 px-3 py-1.5 text-sm bg-zinc-100 dark:bg-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-600 rounded-lg transition-colors"
                     >
                       {preset}
                     </button>
@@ -146,13 +146,13 @@ export function DonateModal() {
               </>
             ) : (
               <div className="text-center py-4">
-                <p className="text-zinc-600 mb-4">
+                <p className="text-zinc-600 dark:text-zinc-300 mb-4">
                   Connect your wallet to make a donation
                 </p>
-                <div className="text-xs text-zinc-500">
+                <div className="text-xs text-zinc-500 dark:text-zinc-400">
                   Wallet address:
                 </div>
-                <div className="bg-zinc-50 rounded-lg p-3 mt-2 text-xs font-mono text-zinc-600 break-all">
+                <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg p-3 mt-2 text-xs font-mono text-zinc-600 dark:text-zinc-300 break-all">
                   {DONATION_ADDRESS}
                 </div>
               </div>

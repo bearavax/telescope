@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { User, Wallet, TrendingUp, Newspaper } from "lucide-react";
+import { User, Wallet, TrendingUp, Newspaper, Calendar, Clock, Users, ChevronRight } from "lucide-react";
 import { useAccount } from "wagmi";
 import { PageNavigation } from "@/components/page-navigation";
 import { Card } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useUserStats } from "@/hooks/use-user-stats";
 import { useUserDiscord } from "@/hooks/use-user-discord";
 import { Address } from "viem";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 
 interface Thread {
   id: string;
@@ -35,6 +35,19 @@ interface NewsArticle {
   image: string | null;
 }
 
+interface DiscordEvent {
+  id: string;
+  name: string;
+  description: string;
+  scheduledStartTime: string;
+  scheduledEndTime: string | null;
+  guildId: string;
+  guildName: string;
+  guildIcon: string | null;
+  guildInvite?: string;
+  userCount?: number;
+}
+
 export default function Home() {
   const { address, isConnected } = useAccount();
   const { data: userStats, isLoading: isUserStatsLoading } = useUserStats(
@@ -44,6 +57,7 @@ export default function Home() {
   const { data: discordUser } = useUserDiscord(userStats?.discordId || "");
   const [trendingThreads, setTrendingThreads] = useState<Thread[]>([]);
   const [recentArticles, setRecentArticles] = useState<NewsArticle[]>([]);
+  const [todaysEvents, setTodaysEvents] = useState<DiscordEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
   const calculateTrendingScore = useCallback((thread: Thread): number => {
@@ -59,14 +73,16 @@ export default function Home() {
 
   const fetchHomeData = useCallback(async () => {
     try {
-      // Fetch trending threads and news in parallel
-      const [threadsResponse, newsResponse] = await Promise.all([
+      // Fetch trending threads, news, and events in parallel
+      const [threadsResponse, newsResponse, eventsResponse] = await Promise.all([
         fetch("/api/forum/trending"),
-        fetch("/api/news")
+        fetch("/api/news"),
+        fetch("/api/discord/events")
       ]);
 
       const threadsData = await threadsResponse.json();
       const newsData = await newsResponse.json();
+      const eventsData = await eventsResponse.json();
 
       if (Array.isArray(threadsData)) {
         const threadsWithScores = threadsData.map(thread => ({
@@ -83,6 +99,21 @@ export default function Home() {
 
       if (Array.isArray(newsData)) {
         setRecentArticles(newsData.slice(0, 6));
+      }
+
+      // Filter for today's events
+      if (eventsData.events && Array.isArray(eventsData.events)) {
+        const today = new Date();
+        const filtered = eventsData.events.filter((event: DiscordEvent) => {
+          const eventDate = new Date(event.scheduledStartTime);
+          return (
+            eventDate >= new Date() && // Future events only
+            eventDate.getDate() === today.getDate() &&
+            eventDate.getMonth() === today.getMonth() &&
+            eventDate.getFullYear() === today.getFullYear()
+          );
+        });
+        setTodaysEvents(filtered);
       }
     } catch (error) {
       console.error("Error fetching home data:", error);
@@ -161,6 +192,84 @@ export default function Home() {
             )}
           </Card>
 
+          {/* Today's Events Section */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-bold">Today</h2>
+                {todaysEvents.length > 0 && (
+                  <div className="px-2 py-0.5 bg-primary/10 rounded-md">
+                    <span className="text-xs font-semibold text-primary">{todaysEvents.length}</span>
+                  </div>
+                )}
+              </div>
+              <Link href="/calendar" className="text-sm text-primary hover:underline">
+                View calendar
+              </Link>
+            </div>
+            {loading ? (
+              <div className="h-32 bg-zinc-100 dark:bg-zinc-800 animate-pulse rounded-lg" />
+            ) : (
+              <Card className="p-4 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-800">
+                {todaysEvents.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-2 opacity-50" />
+                    <p className="text-sm text-muted-foreground font-semibold mb-1">No events today</p>
+                    <p className="text-xs text-muted-foreground">Check the calendar for upcoming events</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {todaysEvents.map((event) => (
+                      <Link key={event.id} href="/calendar">
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center p-3 rounded-lg hover:bg-white dark:hover:bg-zinc-800 transition-all cursor-pointer">
+                          {/* Column 1: Icon & Title */}
+                          <div className="md:col-span-5 flex items-center gap-3">
+                            {event.guildIcon && (
+                              <img src={event.guildIcon} alt="" className="w-10 h-10 rounded-lg shadow-md flex-shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="font-bold text-sm line-clamp-1">{event.name}</div>
+                              <div className="text-xs text-muted-foreground">{event.guildName}</div>
+                            </div>
+                          </div>
+
+                          {/* Column 2: Time */}
+                          <div className="md:col-span-3 flex items-center gap-2">
+                            <Clock className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                            <div className="text-xs">
+                              <div className="font-semibold">
+                                {format(new Date(event.scheduledStartTime), 'h:mm a')}
+                              </div>
+                              <div className="text-muted-foreground">
+                                in {formatDistanceToNow(new Date(event.scheduledStartTime)).replace('about ', '')}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Column 3: Interested */}
+                          <div className="md:col-span-3 flex items-center gap-2">
+                            {event.userCount !== undefined && event.userCount > 0 && (
+                              <>
+                                <Users className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                                <span className="text-xs"><strong>{event.userCount}</strong> interested</span>
+                              </>
+                            )}
+                          </div>
+
+                          {/* Column 4: Arrow */}
+                          <div className="md:col-span-1 flex justify-end">
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            )}
+          </div>
+
           {/* Recent News */}
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -176,7 +285,7 @@ export default function Home() {
               {loading ? (
                 <>
                   {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="h-48 bg-zinc-100 animate-pulse rounded-lg" />
+                    <div key={i} className="h-48 bg-zinc-100 dark:bg-zinc-800 animate-pulse rounded-lg" />
                   ))}
                 </>
               ) : recentArticles.length > 0 ? (
@@ -230,7 +339,7 @@ export default function Home() {
               {loading ? (
                 <>
                   {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="h-24 bg-zinc-100 animate-pulse rounded-lg" />
+                    <div key={i} className="h-24 bg-zinc-100 dark:bg-zinc-800 animate-pulse rounded-lg" />
                   ))}
                 </>
               ) : trendingThreads.length > 0 ? (

@@ -110,7 +110,7 @@ export const AuthorTags = ({ selectedTab }: AuthorTagsProps) => {
     return (
       <div className="flex flex-wrap gap-2 items-center">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-8 w-24 bg-zinc-100 animate-pulse rounded-lg" />
+          <div key={i} className="h-8 w-24 bg-zinc-100 dark:bg-zinc-800 animate-pulse rounded-lg" />
         ))}
       </div>
     );

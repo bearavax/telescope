@@ -15,8 +15,8 @@ export function PageNavigation() {
           <button
             className={`px-3 sm:px-4 py-2.5 sm:py-3 font-bold text-md border-2 rounded-xl transition-all duration-300 ease-in-out flex items-center gap-2 ${
               pathname === "/"
-                ? "bg-white border-white shadow text-foreground"
-                : "bg-white border-white hover:bg-zinc-50 text-muted-foreground"
+                ? "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 shadow text-foreground"
+                : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-muted-foreground"
             }`}
           >
             <HomeIcon className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
@@ -27,8 +27,8 @@ export function PageNavigation() {
           <button
             className={`px-3 sm:px-4 py-2.5 sm:py-3 font-bold text-md border-2 rounded-xl transition-all duration-300 ease-in-out flex items-center gap-2 ${
               pathname === "/calendar"
-                ? "bg-white border-white shadow text-foreground"
-                : "bg-white border-white hover:bg-zinc-50 text-muted-foreground"
+                ? "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 shadow text-foreground"
+                : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-muted-foreground"
             }`}
           >
             <Calendar className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
@@ -39,8 +39,8 @@ export function PageNavigation() {
           <button
             className={`px-3 sm:px-4 py-2.5 sm:py-3 font-bold text-md border-2 rounded-xl transition-all duration-300 ease-in-out flex items-center gap-2 ${
               pathname?.startsWith("/forum")
-                ? "bg-white border-white shadow text-foreground"
-                : "bg-white border-white hover:bg-zinc-50 text-muted-foreground"
+                ? "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 shadow text-foreground"
+                : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-muted-foreground"
             }`}
           >
             <Monitor className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
@@ -51,8 +51,8 @@ export function PageNavigation() {
           <button
             className={`px-3 sm:px-4 py-2.5 sm:py-3 font-bold text-md border-2 rounded-xl transition-all duration-300 ease-in-out flex items-center gap-2 ${
               pathname === "/projects"
-                ? "bg-white border-white shadow text-foreground"
-                : "bg-white border-white hover:bg-zinc-50 text-muted-foreground"
+                ? "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 shadow text-foreground"
+                : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-muted-foreground"
             }`}
           >
             <Library className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
@@ -65,8 +65,8 @@ export function PageNavigation() {
           <button
             className={`group py-2.5 sm:py-3 font-bold text-md border-2 rounded-xl transition-all duration-500 ease-in-out flex items-center overflow-hidden ${
               pathname?.startsWith("/news")
-                ? "bg-white border-white shadow text-foreground justify-start pl-3 sm:pl-4 pr-3 sm:pr-4 gap-2"
-                : "bg-white border-white hover:bg-zinc-50 text-muted-foreground justify-center px-3 sm:px-3.5 sm:group-hover:justify-start sm:group-hover:pl-4 sm:group-hover:pr-3 sm:group-hover:gap-2"
+                ? "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 shadow text-foreground justify-start pl-3 sm:pl-4 pr-3 sm:pr-4 gap-2"
+                : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-muted-foreground justify-center px-3 sm:px-3.5 sm:group-hover:justify-start sm:group-hover:pl-4 sm:group-hover:pr-3 sm:group-hover:gap-2"
             }`}
           >
             <Newspaper className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
@@ -79,8 +79,8 @@ export function PageNavigation() {
           <button
             className={`group py-2.5 sm:py-3 font-bold text-md border-2 rounded-xl transition-all duration-500 ease-in-out flex items-center overflow-hidden ${
               pathname?.startsWith("/artists")
-                ? "bg-white border-white shadow text-foreground justify-start pl-3 sm:pl-4 pr-3 sm:pr-4 gap-2"
-                : "bg-white border-white hover:bg-zinc-50 text-muted-foreground justify-center px-3 sm:px-3.5 sm:group-hover:justify-start sm:group-hover:pl-4 sm:group-hover:pr-3 sm:group-hover:gap-2"
+                ? "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 shadow text-foreground justify-start pl-3 sm:pl-4 pr-3 sm:pr-4 gap-2"
+                : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-muted-foreground justify-center px-3 sm:px-3.5 sm:group-hover:justify-start sm:group-hover:pl-4 sm:group-hover:pr-3 sm:group-hover:gap-2"
             }`}
           >
             <Palette className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
@@ -93,8 +93,8 @@ export function PageNavigation() {
           <button
             className={`group py-2.5 sm:py-3 font-bold text-md border-2 rounded-xl transition-all duration-500 ease-in-out flex items-center overflow-hidden ${
               pathname?.startsWith("/shop")
-                ? "bg-white border-white shadow text-foreground justify-start pl-3 sm:pl-4 pr-3 sm:pr-4 gap-2"
-                : "bg-white border-white hover:bg-zinc-50 text-muted-foreground justify-center px-3 sm:px-3.5 sm:group-hover:justify-start sm:group-hover:pl-4 sm:group-hover:pr-3 sm:group-hover:gap-2"
+                ? "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 shadow text-foreground justify-start pl-3 sm:pl-4 pr-3 sm:pr-4 gap-2"
+                : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-muted-foreground justify-center px-3 sm:px-3.5 sm:group-hover:justify-start sm:group-hover:pl-4 sm:group-hover:pr-3 sm:group-hover:gap-2"
             }`}
           >
             <Gift className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />

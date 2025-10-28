@@ -227,7 +227,7 @@ export default function ThreadPage() {
       <div className="space-y-4 mb-8">
         {thread.posts.map((post, index) => (
           <div key={post.id} className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
-            <div className={`p-4 rounded ${post.isOp ? 'bg-white' : 'bg-zinc-300'}`}>
+            <div className={`p-4 rounded ${post.isOp ? 'bg-white dark:bg-zinc-900' : 'bg-zinc-100 dark:bg-zinc-800'}`}>
               {/* User Info Bar */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3 text-sm">

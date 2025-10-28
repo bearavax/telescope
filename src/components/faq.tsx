@@ -42,7 +42,7 @@ export const FAQ = () => {
   return (
     <Credenza>
       <CredenzaTrigger asChild>
-        <button className="flex items-center gap-2 bg-white rounded-lg p-2 shadow">
+        <button className="flex items-center gap-2 bg-white dark:bg-zinc-800 rounded-lg p-2 shadow hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
           <Info size={20} />
         </button>
       </CredenzaTrigger>
@@ -53,10 +53,10 @@ export const FAQ = () => {
         <CredenzaBody className="rounded-md flex flex-col gap-4">
           {faqItems.map((item, index) => (
             <div key={index}>
-              <h3 className="text-lg font-semibold text-sky-900">
+              <h3 className="text-lg font-semibold text-sky-900 dark:text-sky-400">
                 {item.question}
               </h3>
-              <p className="text-black">{item.answer}</p>
+              <p className="text-zinc-900 dark:text-zinc-100">{item.answer}</p>
             </div>
           ))}
         </CredenzaBody>

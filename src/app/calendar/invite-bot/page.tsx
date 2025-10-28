@@ -52,11 +52,7 @@ export default function InviteBotPage() {
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Displays events on your Telescope calendar</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>Allows you to export events to your personal calendar</span>
+                <span>Displays events on Telescope Calendar</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />

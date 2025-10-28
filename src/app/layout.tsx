@@ -80,10 +80,12 @@ export default function RootLayout({
       <body
         className={`antialiased`}
       >
-        <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Web3Provider>
-            <Toaster />
-            <Navbar />
+            <div className="bg">
+              <Toaster />
+              <Navbar />
+            </div>
             {children}
             <Footer />
           </Web3Provider>

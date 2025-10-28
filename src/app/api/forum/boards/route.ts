@@ -19,6 +19,7 @@ const INITIAL_BOARDS = [
   { name: "eco", title: "Ecosystem Projects", description: "Projects building on Avalanche" },
   { name: "reg", title: "Regulations & Compliance", description: "Legal and regulatory discussions" },
   { name: "bridge", title: "Newcomers", description: "Arriving to Avalanche" },
+  { name: "avax_art", title: "Post Your AVAX Artwork", description: "hi ava artists, let's see your work! include salvor link if it's a collection" },
   { name: "b", title: "Random", description: "Off-topic and random discussion" }
 ];
 

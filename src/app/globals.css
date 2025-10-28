@@ -41,30 +41,30 @@ body {
     --radius: 0.5rem;
   }
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background: 0 0% 10%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 14%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 14%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 0 0% 90%;
+    --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 25%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 0 62.8% 45%;
+    --destructive-foreground: 0 0% 95%;
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+    --ring: 0 0% 70%;
+    --chart-1: 0 0% 70%;
+    --chart-2: 0 0% 60%;
+    --chart-3: 0 0% 50%;
+    --chart-4: 0 0% 40%;
+    --chart-5: 0 0% 30%;
   }
 }
 
@@ -75,17 +75,38 @@ body {
 }
 
 .bg {
+  min-height: 400px;
+  background-color: #e6f0f5;
   background-image: url("/bg.png"), url("/bg-tile.png");
-  background-repeat: no-repeat, repeat;
-  background-position: center, center;
-  background-size: contain, contain;
+  background-repeat: no-repeat, repeat-x;
+  background-position: center center, center center;
+  background-size: contain, auto 100%;
+  position: relative;
+}
+
+.dark .bg {
+  background-color: #1a1a1a;
+  background-image: url("/bg.png"), url("/bg-tile.png");
+  background-repeat: no-repeat, repeat-x;
+  background-position: center center, center center;
+  background-size: contain, auto 100%;
 }
 
 @media screen and (max-width: 768px) {
   .bg {
+    min-height: 300px;
     background-image: url("/bg.png");
+    background-repeat: no-repeat;
+    background-position: center center;
     background-size: cover;
-    background-position: center;
+  }
+
+  .dark .bg {
+    background-image: url("/bg.png");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    filter: grayscale(100%);
   }
 }
 

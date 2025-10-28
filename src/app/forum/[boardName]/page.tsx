@@ -244,7 +244,7 @@ export default function BoardPage() {
         {threads.map((thread) => (
           <Link key={thread.id} href={`/forum/thread/${thread.id}`}>
             <div className="hover:opacity-80 transition-opacity cursor-pointer h-full">
-              <div className="p-3 bg-white rounded h-full flex flex-col">
+              <div className="p-3 bg-white dark:bg-zinc-900 rounded h-full flex flex-col">
                 {/* Thread Image */}
                 {thread.posts[0]?.imageHash && (
                   <div className="w-full aspect-square overflow-hidden rounded bg-zinc-100 mb-2">
@@ -264,8 +264,8 @@ export default function BoardPage() {
                   <p className="text-xs text-muted-foreground line-clamp-2">
                     {thread.posts[0]?.comment}
                   </p>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-                    <span className="truncate">{thread.replyCount} replies</span>
+                  <div className="flex items-center justify-between text-xs pt-1">
+                    <span className="truncate text-white">{thread.replyCount} replies</span>
                   </div>
                 </div>
               </div>

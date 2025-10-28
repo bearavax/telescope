@@ -256,7 +256,7 @@ export function ForumOverview() {
           {recentThreads.length > 0 ? (
             recentThreads.slice(0, 3).map((thread) => (
               <Link key={thread.id} href={`/forum/thread/${thread.id}`}>
-                <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
+                <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full bg-white dark:bg-zinc-900">
                   <div className="flex gap-3 p-3">
                     {thread.posts[0]?.imageHash && (
                       <div className="w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
@@ -326,7 +326,7 @@ export function ForumOverview() {
                     <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f', textShadow: '0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4)' }}>
+                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f' }}>
                             /{board.name}/
                           </h3>
                           <div className="flex flex-col gap-1 flex-1 min-w-0">
@@ -369,7 +369,7 @@ export function ForumOverview() {
                     <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f', textShadow: '0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4)' }}>
+                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f' }}>
                             /{board.name}/
                           </h3>
                           <div className="flex flex-col gap-1 flex-1 min-w-0">
@@ -412,7 +412,7 @@ export function ForumOverview() {
                     <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f', textShadow: '0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4)' }}>
+                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f' }}>
                             /{board.name}/
                           </h3>
                           <div className="flex flex-col gap-1 flex-1 min-w-0">
@@ -447,15 +447,15 @@ export function ForumOverview() {
             </h3>
             <Card className={`overflow-hidden ${unlockProgress < unlockThresholds['Projects & Applications'] ? 'opacity-40 pointer-events-none' : ''}`}>
               <div className="divide-y">
-                {boards.filter(b => ['nft', 'game', 'eco', 'adopt'].includes(b.name)).sort((a, b) => {
-                  const order = ['nft', 'game', 'eco', 'adopt'];
+                {boards.filter(b => ['nft', 'avax_art', 'game', 'eco', 'adopt'].includes(b.name)).sort((a, b) => {
+                  const order = ['nft', 'avax_art', 'game', 'eco', 'adopt'];
                   return order.indexOf(a.name) - order.indexOf(b.name);
                 }).map((board) => (
                   <Link key={board.id} href={`/forum/${board.name}`}>
                     <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f', textShadow: '0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4)' }}>
+                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f' }}>
                             /{board.name}/
                           </h3>
                           <div className="flex flex-col gap-1 flex-1 min-w-0">
@@ -498,7 +498,7 @@ export function ForumOverview() {
                     <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f', textShadow: '0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4)' }}>
+                          <h3 className="font-bold text-sm whitespace-nowrap w-[5rem] pl-2" style={{ color: '#3c688f' }}>
                             /{board.name}/
                           </h3>
                           <div className="flex flex-col gap-1 flex-1 min-w-0">
