@@ -368,7 +368,7 @@ export default function CalendarPage() {
                           >
                             <div className="flex items-center gap-2.5">
                               {server.guildIcon && (
-                                <img loading="lazy" src={server.guildIcon} alt="" loading="lazy" className="w-8 h-8 rounded-lg shadow-md flex-shrink-0" />
+                                <img loading="lazy" src={server.guildIcon} alt="" className="w-8 h-8 rounded-lg shadow-md flex-shrink-0" />
                               )}
                               <div className="flex-1 min-w-0">
                                 <div className="font-bold text-xs line-clamp-1">{server.guildName}</div>
@@ -399,7 +399,7 @@ export default function CalendarPage() {
                                 >
                                   <div className="flex items-start gap-2">
                                     {event.guildIcon && (
-                                      <img loading="lazy" src={event.guildIcon} alt="" loading="lazy" className="w-6 h-6 rounded flex-shrink-0" />
+                                      <img loading="lazy" src={event.guildIcon} alt="" className="w-6 h-6 rounded flex-shrink-0" />
                                     )}
                                     <div className="flex-1 min-w-0">
                                       <div className="text-xs font-semibold line-clamp-1 mb-0.5">{event.name}</div>
@@ -470,7 +470,7 @@ export default function CalendarPage() {
                 <DialogHeader>
                   <DialogTitle className="flex items-start gap-3 pb-4 border-b">
                     {selectedEvent.guildIcon && (
-                      <img loading="lazy" src={selectedEvent.guildIcon} alt="" loading="lazy" className="w-14 h-14 rounded-xl shadow-md flex-shrink-0" />
+                      <img loading="lazy" src={selectedEvent.guildIcon} alt="" className="w-14 h-14 rounded-xl shadow-md flex-shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-xl line-clamp-2 mb-1">{selectedEvent.name}</div>
@@ -560,7 +560,7 @@ export default function CalendarPage() {
                 <DialogHeader>
                   <DialogTitle className="flex items-start gap-3 pb-4 border-b">
                     {selectedServer.guildIcon && (
-                      <img loading="lazy" src={selectedServer.guildIcon} alt="" loading="lazy" className="w-14 h-14 rounded-xl shadow-md flex-shrink-0" />
+                      <img loading="lazy" src={selectedServer.guildIcon} alt="" className="w-14 h-14 rounded-xl shadow-md flex-shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-xl line-clamp-2 mb-1">{selectedServer.guildName}</div>
