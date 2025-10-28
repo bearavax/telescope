@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    DATABASE_URL: z.string().url().optional(),
+    DATABASE_URL: z.string().min(1).optional(),
     DISCORD_CLIENT_ID: z.string().min(1),
     DISCORD_CLIENT_SECRET: z.string().min(1),
     DISCORD_BOT_TOKEN: z.string().min(1),
@@ -26,3 +26,4 @@ export const env = createEnv({
       process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
   },
 });
+
