@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "bot": "node bot.js",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
@@ -33,6 +34,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "discord.js": "^14.24.0",
     "dotenv": "^17.2.3",
     "encoding": "^0.1.13",
     "framer-motion": "^11.13.1",
