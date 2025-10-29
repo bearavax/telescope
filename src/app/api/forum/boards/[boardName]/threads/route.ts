@@ -97,7 +97,7 @@ export async function POST(
     const xpResult = await awardPostXP(walletAddress);
 
     // Create thread and first post in a transaction
-    const result = await prisma.\$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       // Check if board is at max threads (90) - only count non-deleted threads
       const threadCount = await tx.thread.count({
         where: {
