@@ -31,6 +31,7 @@ model User {
   artVotes  ArtVote[]
   discordId String?
   claims    Claim[]
+  collectables UserCollectable[]
 }
 
 model Project {
@@ -188,6 +189,10 @@ model Reward {
   totalAvailable  Int      // Total number of rewards
   claimed         Int      @default(0) // Number already claimed
   active          Boolean  @default(true)
+  limitedTime     Boolean  @default(false) // Whether this is a limited time offer
+  availableUntil  DateTime? // When the limited time offer expires
+  contractAddress String?  // Contract address to verify interaction with
+  requiredYear    Int?     // Year user must have interacted with contract
   createdAt       DateTime @default(now())
   claims          Claim[]
 }
@@ -200,4 +205,30 @@ model Claim {
   reward      Reward   @relation(fields: [rewardId], references: [id])
   claimedAt   DateTime @default(now())
   coinsSpent  Int      // Coins spent at time of claim
+}
+
+model Collectable {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  collectableId    String   @unique // e.g., "snowdog", "puppet", "yak"
+  name             String   // Display name
+  description      String
+  imageUrl         String   // Image for the collectable
+  rarity           String   @default("common") // "common", "rare", "epic", "legendary"
+  category         String?  // e.g., "mascot", "character", "achievement"
+  active           Boolean  @default(true) // Whether this collectable can still be earned
+  createdAt        DateTime @default(now())
+  userCollectables UserCollectable[]
+}
+
+model UserCollectable {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String      @db.ObjectId
+  user           User        @relation(fields: [userId], references: [id])
+  collectableId  String      @db.ObjectId
+  collectable    Collectable @relation(fields: [collectableId], references: [id])
+  acquiredAt     DateTime    @default(now())
+  nftMinted      Boolean     @default(false) // Track if NFT has been minted
+  nftTokenId     String?     // Token ID once NFT is minted
+
+  @@unique([userId, collectableId]) // A user can only have one of each collectable
 }

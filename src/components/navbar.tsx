@@ -54,10 +54,14 @@ export function Navbar() {
               </div>
             </Link>
           )}
-          <DonateModal />
-          <FAQ />
-          <ThemeToggle />
+          {/* Desktop buttons */}
+          <div className="hidden md:flex items-center gap-2 [&_.mobile-menu-text]:hidden">
+            <DonateModal />
+            <FAQ />
+            <ThemeToggle />
+          </div>
           <ConnectButton />
+          {/* Mobile menu */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <button className="md:hidden p-2 rounded-lg bg-white dark:bg-zinc-800 shadow hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
@@ -66,10 +70,23 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent side="right">
               <nav className="flex flex-col gap-4 mt-8">
-                <Link href="/" className="flex items-center gap-2">
-                  <Home className="h-4 w-4" />
+                <Link href="/" className="flex items-center gap-2 text-lg" onClick={() => setIsOpen(false)}>
+                  <Home className="h-5 w-5" />
                   Home
                 </Link>
+                <div className="border-t border-zinc-200 dark:border-zinc-700 my-2" />
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold">Theme</span>
+                    <ThemeToggle />
+                  </div>
+                  <div className="[&_button]:w-full [&_button]:justify-start [&_button]:text-base [&_button]:h-auto [&_button]:py-3 [&_.mobile-menu-text]:inline">
+                    <DonateModal />
+                  </div>
+                  <div className="[&_button]:w-full [&_button]:justify-start [&_button]:text-base [&_button]:h-auto [&_button]:py-3 [&_.mobile-menu-text]:inline">
+                    <FAQ />
+                  </div>
+                </div>
               </nav>
             </SheetContent>
           </Sheet>

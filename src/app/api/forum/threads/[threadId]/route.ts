@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createHash } from "crypto";
 import { awardPostXP } from "@/lib/xp-system";
+import { notifyNewReply } from "@/lib/discord/notify";
 
 // Generate unique poster ID (same wallet = same ID per board)
 function generatePosterId(walletAddress: string, boardName: string): string {
@@ -170,6 +171,26 @@ export async function POST(
 
       return { post, thread: updatedThread };
     });
+
+
+    // Get user data for notification
+    const user = await prisma.user.findUnique({
+      where: { address: walletAddress },
+      select: { username: true }
+    });
+
+    // Send Discord notification (async, don't wait) - only for actual replies, not OP edits
+    if (!isOpPost) {
+      notifyNewReply({
+        threadTitle: result.thread.subject || 'Untitled Thread',
+        threadId: result.thread.id,
+        boardName: boardName,
+        username: user?.username || undefined,
+        anonymous: anonymous !== undefined ? anonymous : true,
+        preview: comment,
+        imageUrl: imageHash || null,
+      }).catch(err => console.error('Discord notification error:', err));
+    }
 
     return NextResponse.json({
       success: true,

@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useUserStats } from "@/hooks/use-user-stats";
 import { useUserDiscord } from "@/hooks/use-user-discord";
+import { CollectSnowdogButton } from "@/components/collect-snowdog-button";
 import { Address } from "viem";
 import { formatDistanceToNow, format } from "date-fns";
 
@@ -191,6 +192,11 @@ export default function Home() {
               </div>
             )}
           </Card>
+
+          {/* Collect Snowdog Button */}
+          {isConnected && (
+            <CollectSnowdogButton address={address as Address} />
+          )}
 
           {/* Today's Events Section */}
           <div>

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createHash } from "crypto";
 import { awardPostXP } from "@/lib/xp-system";
+import { notifyNewThread } from "@/lib/discord/notify";
 
 // Generate unique poster ID (same wallet = same ID per board)
 function generatePosterId(walletAddress: string, boardName: string): string {
@@ -85,17 +86,18 @@ export async function POST(
     const posterId = generatePosterId(walletAddress, boardName);
 
     // Ensure user exists
-    await prisma.user.upsert({
+    const user = await prisma.user.upsert({
       where: { address: walletAddress },
       create: { address: walletAddress },
-      update: {}
+      update: {},
+      select: { username: true }
     });
 
     // Check and award XP BEFORE creating the post
     const xpResult = await awardPostXP(walletAddress);
 
     // Create thread and first post in a transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.\$transaction(async (tx) => {
       // Check if board is at max threads (90) - only count non-deleted threads
       const threadCount = await tx.thread.count({
         where: {
@@ -160,9 +162,21 @@ export async function POST(
       return { thread, post };
     });
 
+    // Send Discord notification (async, don't wait)
+    notifyNewThread({
+      title: subject || 'Untitled Thread',
+      boardName: board.name,
+      username: user.username || undefined,
+      anonymous: anonymous !== undefined ? anonymous : true,
+      preview: comment,
+      threadId: result.thread.id,
+      imageUrl: imageHash || null,
+    }).catch(err => console.error('Discord notification error:', err));
+
     return NextResponse.json({
       success: true,
       threadId: result.thread.id,
+      imageUrl: imageHash || null,
       postId: result.post.id,
       xpAwarded: xpResult.xpAwarded,
       newXp: xpResult.newXp,

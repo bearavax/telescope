@@ -156,9 +156,15 @@ export default function ClaimPage() {
                   ))}
                 </>
               ) : rewards.length > 0 ? (
-                rewards.map((reward) => (
+                rewards.filter(reward => reward.available > 0).map((reward) => {
+                  const isMysteriousKey = reward.name === 'Mysterious Key';
+                  return (
                   <div key={reward.id} className="relative">
-                    <div className="snow-button-card bg-zinc-100 dark:bg-zinc-800 rounded-lg shadow-lg hover:shadow-xl transition-all overflow-hidden">
+                    <div className={`snow-button-card rounded-lg shadow-lg hover:shadow-xl transition-all overflow-hidden ${
+                      isMysteriousKey 
+                        ? 'bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-blue-950 dark:via-zinc-900 dark:to-blue-950 border-2 border-blue-300 dark:border-blue-700 animate-shimmer bg-[length:200%_100%]' 
+                        : 'bg-zinc-100 dark:bg-zinc-800'
+                    }`}>
                       <div className="flex flex-col md:flex-row gap-6 p-6">
                         {/* Image Section */}
                         <div className="flex-shrink-0 w-full md:w-48 h-48 rounded-lg overflow-hidden">
@@ -176,30 +182,32 @@ export default function ClaimPage() {
                         {/* Content Section */}
                         <div className="flex-1 flex flex-col justify-between">
                           <div>
-                            <h3 className="font-bold text-2xl mb-2">{reward.name}</h3>
-                            <p className="text-muted-foreground mb-4">
+                            <h3 className={`font-bold text-2xl mb-2 ${isMysteriousKey ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 dark:from-blue-400 dark:via-cyan-300 dark:to-blue-400 animate-shimmer-text bg-[length:200%_100%]' : ''}`}>{reward.name}</h3>
+                            <p className={`mb-4 ${isMysteriousKey ? 'text-blue-700 dark:text-blue-300 font-medium text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 dark:from-blue-400 dark:via-cyan-300 dark:to-blue-400 animate-shimmer-text bg-[length:200%_100%]' : 'text-muted-foreground'}`}>
                               {reward.description}
                             </p>
-                            <a
-                              href={reward.nftCollectionUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-primary hover:underline inline-flex items-center gap-1"
-                            >
-                              View Collection on Salvor →
-                            </a>
+                            {reward.nftCollectionUrl !== '#' && (
+                              <a
+                                href={reward.nftCollectionUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+                              >
+                                View Collection on Salvor →
+                              </a>
+                            )}
                           </div>
 
                           {/* Stats and Button */}
                           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-4">
                             <div className="flex gap-6">
                               <div>
-                                <p className="text-sm text-muted-foreground">Price</p>
-                                <p className="text-2xl font-bold">{reward.xpRequired} <span className="text-sm text-muted-foreground">Coins</span></p>
+                                <p className={`text-sm ${isMysteriousKey ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'}`}>Price</p>
+                                <p className={`text-2xl font-bold ${isMysteriousKey ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 dark:from-blue-400 dark:via-cyan-300 dark:to-blue-400 animate-shimmer-text bg-[length:200%_100%]' : ''}`}>{reward.xpRequired} <span className={`text-sm ${isMysteriousKey ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'}`}>Coins</span></p>
                               </div>
                               <div className="border-l pl-6">
-                                <p className="text-sm text-muted-foreground">Available</p>
-                                <p className="text-2xl font-bold">{reward.available}<span className="text-sm text-muted-foreground">/{reward.totalAvailable}</span></p>
+                                <p className={`text-sm ${isMysteriousKey ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'}`}>Available</p>
+                                <p className={`text-2xl font-bold ${isMysteriousKey ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 dark:from-blue-400 dark:via-cyan-300 dark:to-blue-400 animate-shimmer-text bg-[length:200%_100%]' : ''}`}>{reward.available}<span className={`text-sm ${isMysteriousKey ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'}`}>/{reward.totalAvailable}</span></p>
                               </div>
                             </div>
                             <button
@@ -230,7 +238,8 @@ export default function ClaimPage() {
                       </div>
                     </div>
                   </div>
-                ))
+                  );
+                })
               ) : (
                 <Card className="p-8 text-center">
                   <p className="text-muted-foreground">No rewards available at the moment</p>

@@ -15,7 +15,7 @@ import { Address } from "viem";
 import { useParams } from "next/navigation";
 import { useAccount } from "wagmi";
 import { UserBadge } from "@/components/user-badge";
-import { MessageSquare, ThumbsUp, Award, ExternalLink } from "lucide-react";
+import { MessageSquare, ThumbsUp, Award, ExternalLink, Package, Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -87,6 +87,19 @@ export default function ProfilePage() {
         return response.json();
       },
       enabled: !!addressParam && showForumPosts, // Only load when dialog is open
+    });
+
+  const { data: collectables, isLoading: isLoadingCollectables } =
+    useQuery<any[]>({
+      queryKey: ["collectables", addressParam],
+      queryFn: async () => {
+        if (!addressParam) throw new Error("No address");
+        const response = await fetch(`/api/collectables?address=${addressParam}`);
+        if (!response.ok) throw new Error("Failed to fetch collectables");
+        const data = await response.json();
+        return data.filter((c: any) => c.hasClaimed);
+      },
+      enabled: !!addressParam,
     });
 
 
@@ -247,6 +260,62 @@ export default function ProfilePage() {
           </div>
         </Card>
       )}
+
+      {/* Collectables Grid - 20 boxes */}
+      <Card className="p-6 mb-8">
+        <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4 flex items-center gap-2">
+          <Package className="h-5 w-5" />
+          Collectables
+        </h2>
+        {isLoadingCollectables ? (
+          <div className="flex gap-3 flex-wrap">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <Skeleton key={i} className="w-20 h-20" />
+            ))}
+          </div>
+        ) : (
+          <div className="flex gap-3 flex-wrap">
+            {Array.from({ length: 10 }).map((_, index) => {
+              const collectable = collectables?.[index];
+              const isLocked = !collectable;
+              const isSnowdog = collectable?.name === 'Snowdog';
+              
+              return (
+                <div key={index} className="flex flex-col items-center gap-1">
+                  <div
+                    className={`w-20 h-20 rounded-lg border-2 flex items-center justify-center transition-all ${
+                      isLocked
+                        ? 'bg-zinc-100 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700'
+                        : isSnowdog
+                        ? 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 border-blue-400 dark:border-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.6)]'
+                        : 'bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-900 border-zinc-300 dark:border-zinc-600 hover:border-blue-400 dark:hover:border-blue-600'
+                    }`}
+                  >
+                    {isLocked ? (
+                      <Lock className="h-6 w-6 text-zinc-400 dark:text-zinc-600" />
+                    ) : (
+                      <img
+                        src={collectable.imageUrl}
+                        alt={collectable.name}
+                        className={`object-contain ${isSnowdog ? 'w-[180%] h-[180%]' : 'w-full h-full p-2'}`}
+                      />
+                    )}
+                  </div>
+                  <span className={`text-[10px] text-center ${
+                    isLocked 
+                      ? 'text-zinc-600 dark:text-zinc-400' 
+                      : isSnowdog 
+                      ? 'text-blue-500 dark:text-blue-300 font-semibold' 
+                      : 'text-zinc-600 dark:text-zinc-400'
+                  }`}>
+                    {isLocked ? 'redacted' : collectable.name}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

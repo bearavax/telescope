@@ -1,0 +1,97 @@
+═══════════════════════════════════════════════════════════════
+  RAILWAY BOT DEPLOYMENT - COPY/PASTE THESE COMMANDS
+═══════════════════════════════════════════════════════════════
+
+📍 STEP 1: Deploy the Bot Service
+───────────────────────────────────────────────────────────────
+cd C:\Users\GGPC\Documents\GitHub\telescope
+railway service
+(Select: bot)
+railway up
+
+
+📍 STEP 2: Set Bot Service Environment Variables
+───────────────────────────────────────────────────────────────
+Make sure "bot" is still selected, then run:
+
+railway variables set DISCORD_BOT_TOKEN="YOUR_DISCORD_BOT_TOKEN_HERE"
+
+railway variables set DISCORD_GENERAL_CHANNEL_ID="881074608537763904"
+
+railway variables set WEBHOOK_SECRET="e64b619ba92a7ab15081ec4a0f63c23c0bc39c7d187262b12858581afe7723a8"
+
+railway variables set BOT_PORT="3001"
+
+
+📍 STEP 3: Get Your Bot's URL
+───────────────────────────────────────────────────────────────
+railway domain
+
+Copy the URL you get (it will look like: https://bot-production-xxxx.up.railway.app)
+⚠️  SAVE THIS URL - YOU NEED IT FOR STEP 4!
+
+
+📍 STEP 4: Configure Next.js App to Use the Bot
+───────────────────────────────────────────────────────────────
+Switch to your main Next.js service:
+
+railway service
+(Select: your main Next.js service - NOT "bot")
+
+Then set these variables (REPLACE <YOUR-BOT-URL> with the URL from Step 3):
+
+railway variables set BOT_WEBHOOK_URL="<YOUR-BOT-URL>"
+
+railway variables set WEBHOOK_SECRET="e64b619ba92a7ab15081ec4a0f63c23c0bc39c7d187262b12858581afe7723a8"
+
+
+📍 STEP 5: Redeploy Your Next.js App (if needed)
+───────────────────────────────────────────────────────────────
+railway up
+
+
+📍 STEP 6: Verify Everything Works
+───────────────────────────────────────────────────────────────
+1. Check bot health:
+   Visit: https://YOUR-BOT-URL.up.railway.app/health
+   Should show: {"status": "ok", "bot": "connected"}
+
+2. Test the integration:
+   - Create a test forum post on telescope.isbjorn.co.nz
+   - Check your Discord channel (ID: 881074608537763904)
+   - You should see a notification!
+
+3. Check logs if something goes wrong:
+   railway service
+   (Select: bot)
+   railway logs
+
+
+═══════════════════════════════════════════════════════════════
+  TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+❌ Bot won't start?
+   → Check logs: railway service → select "bot" → railway logs
+   → Verify DISCORD_BOT_TOKEN is set correctly
+
+❌ No Discord notifications?
+   → Verify BOT_WEBHOOK_URL in Next.js service matches bot's domain
+   → Check WEBHOOK_SECRET is the same in both services
+   → Visit /health endpoint to check bot status
+
+❌ Which service am I on?
+   → Run: railway service
+   → Shows current service and lets you switch
+
+
+═══════════════════════════════════════════════════════════════
+  QUICK REFERENCE
+═══════════════════════════════════════════════════════════════
+
+Discord Channel ID: 881074608537763904
+Webhook Secret: e64b619ba92a7ab15081ec4a0f63c23c0bc39c7d187262b12858581afe7723a8
+Bot Port: 3001
+
+Your Discord Bot Token:
+[Get from Discord Developer Portal - https://discord.com/developers/applications]
