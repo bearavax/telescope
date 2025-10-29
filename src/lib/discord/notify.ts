@@ -33,13 +33,13 @@ export async function notifyNewThread(data: NewThreadData): Promise<void> {
   }
 
   try {
-    const url = \`\${SITE_URL}/forum/thread/\${data.threadId}\`;
+    const url = `${SITE_URL}/forum/thread/${data.threadId}`;
     
-    await fetch(\`\${BOT_WEBHOOK_URL}/webhook/forum-activity\`, {
+    await fetch(`${BOT_WEBHOOK_URL}/webhook/forum-activity`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': \`Bearer \${WEBHOOK_SECRET}\`,
+        'Authorization': `Bearer ${WEBHOOK_SECRET}`,
       },
       body: JSON.stringify({
         type: 'new_thread',
@@ -62,13 +62,13 @@ export async function notifyNewReply(data: NewReplyData): Promise<void> {
   }
 
   try {
-    const url = \`\${SITE_URL}/forum/thread/\${data.threadId}\`;
+    const url = `${SITE_URL}/forum/thread/${data.threadId}`;
     
-    await fetch(\`\${BOT_WEBHOOK_URL}/webhook/forum-activity\`, {
+    await fetch(`${BOT_WEBHOOK_URL}/webhook/forum-activity`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': \`Bearer \${WEBHOOK_SECRET}\`,
+        'Authorization': `Bearer ${WEBHOOK_SECRET}`,
       },
       body: JSON.stringify({
         type: 'new_reply',
