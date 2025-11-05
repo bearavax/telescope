@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { Moon, SunMedium } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
@@ -14,8 +14,8 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <button className="flex items-center gap-2 bg-white dark:bg-zinc-800 rounded-lg px-3 py-2 h-9 shadow">
-        <Sun className="h-4 w-4" />
+      <button className="flex items-center gap-2 bg-white dark:bg-zinc-800 rounded-lg px-2 md:px-3 py-1.5 md:py-2 h-8 md:h-9 shadow">
+        <SunMedium className="h-3.5 w-3.5 md:h-4 md:w-4" />
       </button>
     );
   }
@@ -23,13 +23,13 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="flex items-center gap-2 bg-white dark:bg-zinc-800 rounded-lg px-3 py-2 h-9 shadow hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
+      className="flex items-center gap-2 bg-white dark:bg-zinc-800 rounded-lg px-2 md:px-3 py-1.5 md:py-2 h-8 md:h-9 shadow hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
       aria-label="Toggle theme"
     >
       {theme === "dark" ? (
-        <Moon className="h-4 w-4" />
+        <Moon className="h-3.5 w-3.5 md:h-4 md:w-4" />
       ) : (
-        <Sun className="h-4 w-4" />
+        <SunMedium className="h-3.5 w-3.5 md:h-4 md:w-4" />
       )}
     </button>
   );

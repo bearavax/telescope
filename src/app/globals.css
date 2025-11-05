@@ -98,17 +98,17 @@ body {
 
 @media screen and (max-width: 768px) {
   .bg {
-    min-height: 350px;
+    min-height: 450px;
     background-image: url("/bg.png");
     background-repeat: no-repeat;
-    background-position: center top -50px;
+    background-position: center top 80px;
     background-size: 120% auto;
   }
 
   .dark .bg {
     background-image: url("/bg.png");
     background-repeat: no-repeat;
-    background-position: center top -50px;
+    background-position: center top 80px;
     background-size: 120% auto;
   }
 }
