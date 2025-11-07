@@ -34,6 +34,27 @@ export default function RadioPage() {
           />
         </div>
 
+        {/* YouTube Playlist - Always Playing */}
+        <div className="mb-6 bg-white dark:bg-zinc-800 rounded-2xl border-2 border-white dark:border-zinc-700 shadow-lg overflow-hidden">
+          <div className="p-4 md:p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Radio className="h-5 w-5 text-blue-500" />
+              <h2 className="text-lg md:text-xl font-bold text-foreground">24/7 Playlist</h2>
+            </div>
+            <div className="aspect-video w-full rounded-lg overflow-hidden">
+              <iframe
+                width="100%"
+                height="100%"
+                src="https://www.youtube.com/embed/pyLs2dk9aVU?list=PLFTsqv75_lV4tY3QqwsIMa9uTUtUouAfJ&autoplay=1&loop=1"
+                title="YouTube Playlist"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              ></iframe>
+            </div>
+          </div>
+        </div>
+
         {isLoading ? (
           <div className="space-y-6">
             <div className="bg-white dark:bg-zinc-800 rounded-2xl border-2 border-white dark:border-zinc-700 p-6 animate-pulse">

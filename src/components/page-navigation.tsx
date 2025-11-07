@@ -56,16 +56,16 @@ export function PageNavigation() {
             <span className="text-sm sm:text-base font-semibold">Forum</span>
           </button>
         </Link>
-        <Link href="/radio">
+        <Link href="/artists">
           <button
             className={`px-2 sm:px-4 py-2.5 sm:py-3 font-bold text-md border-2 rounded-xl transition-all duration-300 ease-in-out flex items-center gap-1 sm:gap-2 ${
-              pathname === "/radio"
+              pathname?.startsWith("/artists")
                 ? "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 shadow text-foreground"
                 : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-muted-foreground"
             }`}
           >
-            <RadioIcon className="h-4 w-4 sm:h-6 sm:w-6 flex-shrink-0" />
-            <span className="text-sm sm:text-base font-semibold">Radio</span>
+            <Palette className="h-4 w-4 sm:h-6 sm:w-6 flex-shrink-0" />
+            <span className="text-sm sm:text-base font-semibold">Artists</span>
           </button>
         </Link>
       </div>
@@ -101,17 +101,17 @@ export function PageNavigation() {
             </span>
           </button>
         </Link>
-        <Link href="/artists">
+        <Link href="/radio">
           <button
             className={`group py-2.5 sm:py-3 font-bold text-md border-2 rounded-xl transition-all duration-500 ease-in-out flex items-center overflow-hidden ${
-              pathname?.startsWith("/artists")
+              pathname === "/radio"
                 ? "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 shadow text-foreground justify-start px-2 sm:pl-4 sm:pr-4 gap-1 sm:gap-2"
                 : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-muted-foreground justify-center px-2 sm:px-3.5 sm:group-hover:justify-start sm:group-hover:pl-4 sm:group-hover:pr-3 sm:group-hover:gap-2"
             }`}
           >
-            <Palette className="h-4 w-4 sm:h-6 sm:w-6 flex-shrink-0" />
-            <span className={`${pathname?.startsWith("/artists") ? "max-w-[100px] opacity-100 ml-1 sm:ml-2" : "max-w-0 sm:group-hover:max-w-[100px] opacity-0 sm:group-hover:opacity-100 sm:group-hover:ml-2"} transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap text-sm sm:text-base font-semibold`}>
-              Artists
+            <RadioIcon className="h-4 w-4 sm:h-6 sm:w-6 flex-shrink-0" />
+            <span className={`${pathname === "/radio" ? "max-w-[100px] opacity-100 ml-1 sm:ml-2" : "max-w-0 sm:group-hover:max-w-[100px] opacity-0 sm:group-hover:opacity-100 sm:group-hover:ml-2"} transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap text-sm sm:text-base font-semibold`}>
+              Radio
             </span>
           </button>
         </Link>

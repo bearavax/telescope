@@ -8,6 +8,139 @@ export default function ArtistsPage() {
       <div className="w-full max-w-screen-lg mx-auto -mt-6 px-8 relative z-10 mb-16">
         <PageNavigation />
 
+        {/* AVAX Art Mentors Section - Moved to Top */}
+        <div className="w-full rounded-lg shadow-lg mb-8 border-2" style={{
+          background: 'linear-gradient(to bottom right, #e6f0f5, #d4e8f0)',
+          borderColor: '#4f8aae'
+        }}>
+          <div className="px-8 py-6">
+            <h2 className="text-3xl font-bold mb-2" style={{
+              background: 'linear-gradient(to right, #416c99, #283470)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}>AVAX Art Mentors</h2>
+            <p className="mb-6 text-sm" style={{ color: '#416c99' }}>
+              Meet our talented mentors who will guide you through your artistic journey on Avalanche
+            </p>
+
+            {/* Artist Cards Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
+              {/* Ly (SOPESGAL) */}
+              <a
+                href="https://sopesgal-art.carrd.co/"
+                target="_blank"
+                className="flex flex-col items-center gap-2 p-3 bg-white dark:bg-zinc-800 rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 border border-zinc-200 dark:border-zinc-700"
+              >
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-700 flex-shrink-0 relative">
+                  <img
+                    src="https://sopesgal-art.carrd.co/assets/images/image01.jpg"
+                    alt="Ly"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="text-xs font-semibold text-center">Ly</span>
+              </a>
+
+              {/* Frogwell */}
+              <a
+                href="https://frogwell.art/"
+                target="_blank"
+                className="flex flex-col items-center gap-2 p-3 bg-white dark:bg-zinc-800 rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 border border-zinc-200 dark:border-zinc-700"
+              >
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-700 flex-shrink-0 relative">
+                  <img
+                    src="https://cdn.myportfolio.com/09357e92-1a86-4105-9a77-5fd2e0472d1b/92b0576d-695b-4c11-9a93-0c7cb0760390_rw_1920.jpg?h=4b7acd84a55b8adb4bed7916802070ab"
+                    alt="Frogwell"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="text-xs font-semibold text-center">Frogwell</span>
+              </a>
+
+              {/* Virk Pontelli */}
+              <a
+                href="https://linktr.ee/virkkk"
+                target="_blank"
+                className="flex flex-col items-center gap-2 p-3 bg-white dark:bg-zinc-800 rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 border border-zinc-200 dark:border-zinc-700"
+              >
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-700 flex-shrink-0 relative">
+                  <img
+                    src="https://ugc.production.linktr.ee/T6qNiKmxSdqaAH0e1XhQ_33E481jTFuW56T8B"
+                    alt="Virk"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="text-xs font-semibold text-center">Virk</span>
+              </a>
+
+              {/* Aline Subi */}
+              <a
+                href="https://www.alinesubi.xyz/"
+                target="_blank"
+                className="flex flex-col items-center gap-2 p-3 bg-white dark:bg-zinc-800 rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 border border-zinc-200 dark:border-zinc-700"
+              >
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-700 flex-shrink-0 relative">
+                  <img
+                    src="https://static.wixstatic.com/media/ab0adc_0487cc7ff4fd49c0abb53f46b86f523b~mv2.jpg/v1/fit/w_965,h_797,q_90,enc_avif,quality_auto/ab0adc_0487cc7ff4fd49c0abb53f46b86f523b~mv2.jpg"
+                    alt="Aline"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="text-xs font-semibold text-center">Aline</span>
+              </a>
+
+              {/* Furk */}
+              <a
+                href="https://www.furk-art.com/"
+                target="_blank"
+                className="flex flex-col items-center gap-2 p-3 bg-white dark:bg-zinc-800 rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 border border-zinc-200 dark:border-zinc-700"
+              >
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-700 flex-shrink-0 relative">
+                  <img
+                    src="https://static.wixstatic.com/media/650e28_999a73b2df204830b5545c1879c2c95f~mv2.jpg/v1/fill/w_901,h_507,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Ferdy-web-2son.jpg"
+                    alt="Furk"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="text-xs font-semibold text-center">Furk</span>
+              </a>
+
+              {/* imverartis */}
+              <a
+                href="https://imverartis.carrd.co/"
+                target="_blank"
+                className="flex flex-col items-center gap-2 p-3 bg-white dark:bg-zinc-800 rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 border border-zinc-200 dark:border-zinc-700"
+              >
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-700 flex-shrink-0 relative">
+                  <img
+                    src="https://imverartis.carrd.co/assets/images/image01.jpg"
+                    alt="imverartis"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="text-xs font-semibold text-center">imverartis</span>
+              </a>
+
+              {/* MrMocket */}
+              <a
+                href="https://www.mrmocket.com/"
+                target="_blank"
+                className="flex flex-col items-center gap-2 p-3 bg-white dark:bg-zinc-800 rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 border border-zinc-200 dark:border-zinc-700"
+              >
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-white dark:bg-zinc-700 flex-shrink-0 relative p-2">
+                  <img
+                    src="https://www.mrmocket.com/images/Mocket_bw.png"
+                    alt="MrMocket"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <span className="text-xs font-semibold text-center">MrMocket</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
         <div className="w-full bg-white dark:bg-zinc-800 rounded-lg shadow">
           <div className="px-8 py-6 space-y-6">
             {/* Header & Prompt Combined */}
