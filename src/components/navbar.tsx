@@ -12,6 +12,7 @@ import { FAQ } from "@/components/faq";
 import { ConnectButton } from "@/components/connect-button";
 import { BackButton } from "@/components/back-button";
 import { DonateModal } from "@/components/donate-modal";
+import { ArtClubModal } from "@/components/art-club-modal";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useUserStats } from "@/hooks/use-user-stats";
@@ -32,14 +33,14 @@ export function Navbar() {
 
   return (
     <header className="w-full bg-transparent border-b-4 border-zinc-300 dark:border-zinc-700">
-      <div className="w-full relative h-40 md:h-auto max-w-screen-lg mx-auto pt-4 md:pt-12 pb-4 px-4 md:px-8 flex items-start justify-end md:justify-between md:flex-row">
+      <div className="w-full relative h-64 md:h-auto max-w-screen-lg mx-auto pt-4 md:pt-12 pb-4 px-4 md:px-8 flex items-start justify-end md:justify-between md:flex-row">
         <div className="flex items-center gap-4 absolute left-4 top-4 md:left-8 md:top-12 z-10">
           <BackButton />
         </div>
         <Image
           src="/logo.png"
           alt="Telescope"
-          className="flex items-end absolute md:relative left-4 md:left-0 bottom-0 md:-bottom-4 w-56 md:w-80"
+          className="flex items-end absolute md:relative left-4 md:left-0 -bottom-4 md:-bottom-4 w-80 md:w-80"
           width={320}
           height={80}
           style={{ width: 'auto', height: 'auto' }}
@@ -58,6 +59,7 @@ export function Navbar() {
           )}
           {/* Desktop buttons */}
           <div className="hidden md:flex items-center gap-2 [&_.mobile-menu-text]:hidden">
+            <ArtClubModal />
             <DonateModal />
             <FAQ />
           </div>
@@ -133,7 +135,10 @@ export function Navbar() {
 
                 <div className="border-t border-zinc-200 dark:border-zinc-700" />
 
-                {/* FAQ and Donate */}
+                {/* FAQ, Art Club, and Donate */}
+                <div className="[&_button]:w-full [&_button]:justify-start [&_button]:text-base [&_button]:h-auto [&_button]:py-3 [&_.mobile-menu-text]:inline">
+                  <ArtClubModal />
+                </div>
                 <div className="[&_button]:w-full [&_button]:justify-start [&_button]:text-base [&_button]:h-auto [&_button]:py-3 [&_.mobile-menu-text]:inline">
                   <DonateModal />
                 </div>

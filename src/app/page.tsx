@@ -129,7 +129,7 @@ export default function Home() {
 
   return (
     <div className="w-full">
-      <div className="w-full max-w-screen-lg mx-auto -mt-6 px-4 md:px-8 relative z-10 mb-8 md:mb-16">
+      <div className="w-full max-w-screen-lg mx-auto -mt-6 px-4 md:px-8 relative z-10 mb-8 md:mb-16 mobile-content-align">
         <PageNavigation />
 
         <div className="space-y-6">

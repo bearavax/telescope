@@ -15,7 +15,7 @@ import { Address } from "viem";
 import { useParams } from "next/navigation";
 import { useAccount } from "wagmi";
 import { UserBadge } from "@/components/user-badge";
-import { MessageSquare, ThumbsUp, Award, ExternalLink, Package, Lock } from "lucide-react";
+import { MessageSquare, ThumbsUp, Award, ExternalLink, Package, Lock, Gamepad2, Film, Plus, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,6 +51,10 @@ export default function ProfilePage() {
   const addressParam = params.address as Address;
   const [showVoteHistory, setShowVoteHistory] = useState(false);
   const [showForumPosts, setShowForumPosts] = useState(false);
+  const [showEditGames, setShowEditGames] = useState(false);
+  const [showEditMovies, setShowEditMovies] = useState(false);
+  const [gameSearch, setGameSearch] = useState("");
+  const [movieSearch, setMovieSearch] = useState("");
 
   const { address: connectedAddress } = useAccount();
   const isOwnProfile = addressParam === connectedAddress;
@@ -98,6 +102,18 @@ export default function ProfilePage() {
         if (!response.ok) throw new Error("Failed to fetch collectables");
         const data = await response.json();
         return data.filter((c: any) => c.hasClaimed);
+      },
+      enabled: !!addressParam,
+    });
+
+  const { data: favorites, isLoading: isLoadingFavorites } =
+    useQuery<{ favoriteGames: any[], favoriteMovies: any[] }>({
+      queryKey: ["favorites", addressParam],
+      queryFn: async () => {
+        if (!addressParam) throw new Error("No address");
+        const response = await fetch(`/api/users/${addressParam}/favorites`);
+        if (!response.ok) throw new Error("Failed to fetch favorites");
+        return response.json();
       },
       enabled: !!addressParam,
     });
@@ -317,6 +333,145 @@ export default function ProfilePage() {
         )}
       </Card>
 
+      {/* Games & Movies Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Favorite Games */}
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4 flex items-center gap-2">
+            <Gamepad2 className="h-5 w-5" />
+            Games I Like
+          </h2>
+          {isLoadingFavorites ? (
+            <div className="space-y-3">
+              <Skeleton className="w-full h-20" />
+              <Skeleton className="w-full h-20" />
+            </div>
+          ) : favorites && favorites.favoriteGames && favorites.favoriteGames.length > 0 ? (
+            <div className="space-y-3">
+              {favorites.favoriteGames.slice(0, 5).map((game: any, idx: number) => (
+                <a
+                  key={idx}
+                  href={game.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors"
+                >
+                  {game.imageUrl && (
+                    <img src={game.imageUrl} alt={game.title} className="w-12 h-16 object-cover rounded" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm line-clamp-1">{game.title}</p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      {game.platform && <span>{game.platform}</span>}
+                      {game.metascore && (
+                        <>
+                          <span>•</span>
+                          <span className="font-semibold text-green-600 dark:text-green-500">{game.metascore}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </a>
+              ))}
+              {isOwnProfile && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowEditGames(true)}
+                  className="w-full flex items-center justify-center gap-2 mt-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Edit Games</span>
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-sm text-muted-foreground mb-3">No games added yet</p>
+              {isOwnProfile && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowEditGames(true)}
+                  className="flex items-center justify-center gap-2 mx-auto"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add Games</span>
+                </Button>
+              )}
+            </div>
+          )}
+        </Card>
+
+        {/* Favorite Movies */}
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4 flex items-center gap-2">
+            <Film className="h-5 w-5" />
+            Movies I Like
+          </h2>
+          {isLoadingFavorites ? (
+            <div className="space-y-3">
+              <Skeleton className="w-full h-20" />
+              <Skeleton className="w-full h-20" />
+            </div>
+          ) : favorites && favorites.favoriteMovies && favorites.favoriteMovies.length > 0 ? (
+            <div className="space-y-3">
+              {favorites.favoriteMovies.slice(0, 5).map((movie: any, idx: number) => (
+                <a
+                  key={idx}
+                  href={movie.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors"
+                >
+                  {movie.imageUrl && (
+                    <img src={movie.imageUrl} alt={movie.title} className="w-12 h-16 object-cover rounded" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm line-clamp-1">{movie.title}</p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      {movie.year && <span>{movie.year}</span>}
+                      {movie.rating && (
+                        <>
+                          <span>•</span>
+                          <span className="font-semibold text-yellow-600 dark:text-yellow-500">⭐ {movie.rating}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </a>
+              ))}
+              {isOwnProfile && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowEditMovies(true)}
+                  className="w-full flex items-center justify-center gap-2 mt-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Edit Movies</span>
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-sm text-muted-foreground mb-3">No movies added yet</p>
+              {isOwnProfile && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowEditMovies(true)}
+                  className="flex items-center justify-center gap-2 mx-auto"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add Movies</span>
+                </Button>
+              )}
+            </div>
+          )}
+        </Card>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {/* Forum Stats */}
@@ -490,6 +645,64 @@ export default function ProfilePage() {
             ) : (
               <p className="text-center text-muted-foreground py-8">No votes yet</p>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Games Dialog */}
+      <Dialog open={showEditGames} onOpenChange={setShowEditGames}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gamepad2 className="h-5 w-5" />
+              Edit Your Favorite Games
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <p className="text-sm text-muted-foreground mb-4">
+              Enter game titles manually. Full Metacritic integration coming soon!
+            </p>
+            <div className="space-y-2">
+              <input
+                type="text"
+                placeholder="Search Metacritic for games..."
+                value={gameSearch}
+                onChange={(e) => setGameSearch(e.target.value)}
+                className="w-full px-3 py-2 rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800"
+              />
+              <p className="text-xs text-muted-foreground italic">
+                Note: Manual entry for now. Type game name and press Enter to add.
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Movies Dialog */}
+      <Dialog open={showEditMovies} onOpenChange={setShowEditMovies}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Film className="h-5 w-5" />
+              Edit Your Favorite Movies
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <p className="text-sm text-muted-foreground mb-4">
+              Enter movie titles manually. Full IMDB integration coming soon!
+            </p>
+            <div className="space-y-2">
+              <input
+                type="text"
+                placeholder="Search IMDB for movies..."
+                value={movieSearch}
+                onChange={(e) => setMovieSearch(e.target.value)}
+                className="w-full px-3 py-2 rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800"
+              />
+              <p className="text-xs text-muted-foreground italic">
+                Note: Manual entry for now. Type movie name and press Enter to add.
+              </p>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

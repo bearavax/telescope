@@ -16,7 +16,7 @@ export function PageNavigation() {
   const pathname = usePathname();
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 relative z-20">
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 relative z-30">
       {/* First row - Main 4 tabs */}
       <div className="gap-1 sm:gap-3 flex flex-nowrap">
         {/* Main navigation - always show titles */}

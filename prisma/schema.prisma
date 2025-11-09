@@ -32,6 +32,8 @@ model User {
   discordId String?
   claims    Claim[]
   collectables UserCollectable[]
+  favoriteGames Json[] @default([]) // Array of {title, platform, metascore, imageUrl, url}
+  favoriteMovies Json[] @default([]) // Array of {title, year, rating, imageUrl, url}
 }
 
 model Project {
