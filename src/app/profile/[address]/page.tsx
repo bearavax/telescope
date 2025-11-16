@@ -348,7 +348,7 @@ export default function ProfilePage() {
             </div>
           ) : favorites && favorites.favoriteGames && favorites.favoriteGames.length > 0 ? (
             <div className="space-y-3">
-              {favorites.favoriteGames.slice(0, 5).map((game: any, idx: number) => (
+              {favorites.favoriteGames.slice(0, 1).map((game: any, idx: number) => (
                 <a
                   key={idx}
                   href={game.url}
@@ -416,7 +416,7 @@ export default function ProfilePage() {
             </div>
           ) : favorites && favorites.favoriteMovies && favorites.favoriteMovies.length > 0 ? (
             <div className="space-y-3">
-              {favorites.favoriteMovies.slice(0, 5).map((movie: any, idx: number) => (
+              {favorites.favoriteMovies.slice(0, 1).map((movie: any, idx: number) => (
                 <a
                   key={idx}
                   href={movie.url}

@@ -6,7 +6,7 @@ import { RadioPlayer } from "@/components/radio-player";
 import { LiveRadioCard } from "@/components/live-radio-card";
 import { useQuery } from "@tanstack/react-query";
 import { RadioEpisode } from "@/app/api/radio/route";
-import { ExternalLink, Radio } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from "next/link";
@@ -32,27 +32,6 @@ export default function RadioPage() {
             isLive={false}
             station="96.3 Svalbard"
           />
-        </div>
-
-        {/* YouTube Playlist - Always Playing */}
-        <div className="mb-6 bg-white dark:bg-zinc-800 rounded-2xl border-2 border-white dark:border-zinc-700 shadow-lg overflow-hidden">
-          <div className="p-4 md:p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Radio className="h-5 w-5 text-blue-500" />
-              <h2 className="text-lg md:text-xl font-bold text-foreground">24/7 Playlist</h2>
-            </div>
-            <div className="aspect-video w-full rounded-lg overflow-hidden">
-              <iframe
-                width="100%"
-                height="100%"
-                src="https://www.youtube.com/embed/pyLs2dk9aVU?list=PLFTsqv75_lV4tY3QqwsIMa9uTUtUouAfJ&autoplay=1&loop=1"
-                title="YouTube Playlist"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-              ></iframe>
-            </div>
-          </div>
         </div>
 
         {isLoading ? (

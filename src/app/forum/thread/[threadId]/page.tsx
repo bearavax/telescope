@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAccount } from "wagmi";
 import { PageNavigation } from "@/components/page-navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -35,6 +36,8 @@ interface Post {
     discordId?: string;
     username?: string;
     discordAvatar?: string | null;
+    level?: number;
+    xp?: number;
   };
 }
 
@@ -247,12 +250,33 @@ export default function ThreadPage() {
                       <User className="h-4 w-4 text-primary" />
                     </div>
                   )}
-                  <span className="font-semibold text-green-700 dark:text-green-500">
-                    {post.anonymous
-                      ? 'Anonymous'
-                      : (post.user?.username || post.user?.discordId || (post.walletAddress.slice(0, 6) + '...' + post.walletAddress.slice(-4)))
-                    }
-                  </span>
+                  {post.anonymous ? (
+                    <span className="font-semibold text-green-700 dark:text-green-500">Anonymous</span>
+                  ) : (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="font-semibold text-green-700 dark:text-green-500 cursor-help">
+                            {post.user?.username || post.user?.discordId || (post.walletAddress.slice(0, 6) + '...' + post.walletAddress.slice(-4))}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-md px-3 py-2 border border-zinc-200 dark:border-zinc-700">
+                          <div className="flex flex-col gap-1">
+                            <p className="font-semibold text-sm">User Info</p>
+                            {post.user?.level !== undefined && (
+                              <p className="text-xs text-muted-foreground">Level: {post.user.level}</p>
+                            )}
+                            {post.user?.xp !== undefined && (
+                              <p className="text-xs text-muted-foreground">XP: {post.user.xp}</p>
+                            )}
+                            {post.user?.postCount !== undefined && (
+                              <p className="text-xs text-muted-foreground">Posts: {post.user.postCount}</p>
+                            )}
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                   <span className="text-muted-foreground">{new Date(post.createdAt).toLocaleString()}</span>
                   <span className="text-muted-foreground">ID: {post.posterId}</span>
                   {post.isOp && <Badge variant="secondary" className="text-xs">OP</Badge>}

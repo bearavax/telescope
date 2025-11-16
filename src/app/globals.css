@@ -196,6 +196,7 @@ body {
 .snow-button-card {
   position: relative;
   margin-top: 12px;
+  overflow: hidden;
 }
 
 .snow-button-card::before {

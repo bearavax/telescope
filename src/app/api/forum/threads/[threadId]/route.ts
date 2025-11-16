@@ -41,7 +41,7 @@ export async function GET(
       thread.posts.map(async (post) => {
         const user = await prisma.user.findUnique({
           where: { address: post.walletAddress },
-          select: { createdAt: true, discordId: true, username: true }
+          select: { createdAt: true, discordId: true, username: true, level: true, xp: true }
         });
 
         const postCount = await prisma.post.count({
@@ -80,7 +80,9 @@ export async function GET(
             postCount,
             discordId: user.discordId,
             username: discordUsername,
-            discordAvatar
+            discordAvatar,
+            level: user.level,
+            xp: user.xp
           } : undefined
         };
       })
